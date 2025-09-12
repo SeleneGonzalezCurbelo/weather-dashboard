@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual envs
+.venv/
+venv/
+
+# Env
+.env
+*.env
+
+# Docker
+*.log
+db_data/      
+docker-compose.yml  
+*.tar
+*.tmp
+
+# IDEs
+.vscode/
+.idea/
