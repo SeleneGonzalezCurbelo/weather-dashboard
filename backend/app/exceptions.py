@@ -10,8 +10,6 @@ Exceptions:
 - APIError: raised when an external API call fails.
 - ValidationError: raised when input data is invalid.
 """
-
-from fastapi import HTTPException
 import logging
 
 logger = logging.getLogger(__name__)

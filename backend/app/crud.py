@@ -16,7 +16,6 @@ This module uses custom exceptions to standardize error handling:
 
 import logging
 from typing import Dict, Any
-from app.db import SessionLocal
 from app.models import Weather
 from app.weather_client import get_weather
 from app.exceptions import APIError, DatabaseError, ValidationError

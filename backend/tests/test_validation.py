@@ -2,7 +2,7 @@
 import pytest
 from app.crud import validate_weather_data
 from app.exceptions import ValidationError
-from app.config import TEMP_MIN, TEMP_MAX, HUMIDITY_MIN, HUMIDITY_MAX
+from app.config import TEMP_MAX, HUMIDITY_MAX
 
 def test_validate_weather_data_success():
     data = {

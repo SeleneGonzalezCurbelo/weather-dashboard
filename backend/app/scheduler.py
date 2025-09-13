@@ -2,8 +2,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.crud import save_weather
 from app.db import SessionLocal
-
-CITIES = ["Arrecife", "Madrid", "Barcelona", "London", "New York"]
+from app.config import CITIES
 
 def fetch_and_save_all_cities():
     db = SessionLocal()
