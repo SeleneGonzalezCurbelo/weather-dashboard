@@ -66,7 +66,7 @@ def validate_weather_data(data: Dict[str, Any], city: str) -> Dict[str, Any]:
     }
 
 
-def save_weather(city: str) -> None:
+def save_weather(city: str, db=None) -> None:
     """
     Fetch, validate, and save weather data for a given city.
 
@@ -85,7 +85,12 @@ def save_weather(city: str) -> None:
 
     validated_data = validate_weather_data(data, city)
 
-    db = SessionLocal()
+    new_session = False
+    if db is None:
+        from app.db import SessionLocal
+        db = SessionLocal()
+        new_session = True
+
     try:
         weather_entry = Weather(
             city=validated_data["city"],
@@ -100,4 +105,5 @@ def save_weather(city: str) -> None:
         db.rollback()
         raise DatabaseError(f"Failed to save weather for {city}: {e}")
     finally:
-        db.close()
+        if new_session:
+            db.close()
