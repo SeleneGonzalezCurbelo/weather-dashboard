@@ -13,7 +13,8 @@ The frontend (React) will be added in upcoming iterations.
 - [Project Structure](#project-structure)
 - [Requirements](#requirements)
 - [Getting Started](#getting-started)
-- [API Endpoints](#-api-endpoints)
+- [Running Tests](#running-tests)
+- [API Endpoints](#api-endpoints)
 - [Disclaimer](#disclaimer)
 
 ---
@@ -44,6 +45,12 @@ weather-dashboard/
 │ └── error_handlers.py 
 ├── db/
 │ └── init.sql 
+├── tests/
+│ ├── test_crud.py
+│ ├── test_validation.py
+│ ├── test_weather_client.py
+│ ├── test_main.py
+│ └── conftest.py
 ├── Dockerfile 
 ├── docker-compose.yml 
 ├── requirements.txt
@@ -92,6 +99,28 @@ docker-compose up --build
 4. Access the backend FastAPI:
 - [API Docs](http://localhost:8000/docs)
 - [Health check](http://localhost:8000/)
+---
+
+## Running Tests
+
+The backend includes unit tests for CRUD operations, data validation, and the weather API client.
+
+**Run all tests:**
+
+```
+pytest
+```
+
+**Notes:**
+- Tests use an in-memory SQLite database and do not affect the real PostgreSQL database.
+- Some tests mock external API calls to provide deterministic results.
+- Make sure dependencies are installed (pip install -r requirements.txt) before running tests.
+- The tests cover:
+    - test_crud.py → database operations
+    - test_validation.py → weather data validation logic
+    - test_weather_client.py → API client for fetching weather
+    - test_main.py → FastAPI endpoints (requires local DB or mocks)
+
 ---
 
 ## API Endpoints
