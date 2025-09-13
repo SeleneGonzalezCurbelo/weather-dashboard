@@ -15,6 +15,7 @@ The frontend (React) will be added in upcoming iterations.
 - [Getting Started](#getting-started)
 - [Running Tests](#running-tests)
 - [API Endpoints](#api-endpoints)
+- [Background Jobs (Scheduler)](#background-jobs-scheduler)
 - [Disclaimer](#disclaimer)
 
 ---
@@ -132,6 +133,20 @@ pytest
 | `GET`  | `/weather/save/{city}`    | Fetch and save weather data into DB                |
 | `GET`  | `/weather/history`        | List all saved weather records (paginated)         |
 | `GET`  | `/weather/history/{city}` | List saved records for a specific city (paginated) |
+
+---
+
+## Background Jobs (Scheduler)
+
+Weather Dashboard automatically collects weather data periodically using **APScheduler**, integrated inside the FastAPI app.
+
+- The scheduler runs when the backend starts.
+- It fetches and stores weather data for multiple cities every hour.
+
+If you want to customize the interval or the list of tracked cities, update the configuration in:
+```
+app/scheduler.py
+```
 
 ---
 

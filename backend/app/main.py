@@ -17,6 +17,7 @@ Endpoints:
 - GET /weather/history/{city} : list saved weather records for a specific city
 """
 from fastapi import Depends, FastAPI, HTTPException, Query
+from app.scheduler import scheduler
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
