@@ -12,6 +12,8 @@ venv/
 # Env
 .env
 *.env
+.env.local
+.env.*.local
 
 # Docker
 *.log
@@ -23,3 +25,24 @@ docker-compose.yml
 # IDEs
 .vscode/
 .idea/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build
+dist/
+build/
+
+# Editor / sistema
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Optional cache
+.cache/
+.parcel-cache/
