@@ -46,7 +46,13 @@ weather-dashboard/
 │ ├── db.py 
 │ ├── weather_client.py 
 │ ├── exceptions.py 
-│ └── error_handlers.py 
+│ |── error_handlers.py 
+| ├── routers
+│ │ └── weather.py
+| ├── services
+│ │ └── openweather_adapter.py
+│ │ └── openweather.py
+│ │ └── weather_service.py
 ├── db/
 │ └── init.sql 
 ├── tests/
