@@ -1,20 +1,29 @@
-import './App.css'
-import Header from "./components/Header"
-import SearchBar from "./components/SearchBar"
-import WeatherSummary from "./components/WeatherSummary"
-import TemperatureChart from "./components/TemperatureChart"
-import HistoryTable from "./components/HistoryTable"
+import "./App.css";
+import { useState } from "react";
+import Header from "./components/Header";
+import SearchBar from "./components/SearchBar";
+import WeatherSummary from "./components/WeatherSummary";
+import TemperatureHistory from "./components/TemperatureHistory";
 
 function App() {
+  const [city, setCity] = useState("");
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex flex-col">
       <Header />
-      <SearchBar />
-      <WeatherSummary />
-      <TemperatureChart />
-       <HistoryTable />
+
+      {}
+      <div className="max-w-md mx-auto px-4 py-4 flex flex-col space-y-4">
+        <SearchBar onSearch={setCity} />
+        <WeatherSummary city={city} />
+      </div>
+
+      {}
+      <div className="flex-1 flex flex-col p-4 overflow-hidden">
+        <TemperatureHistory city={city} />
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

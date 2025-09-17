@@ -11,17 +11,38 @@ Schemas:
 - PaginatedWeatherResponse : response wrapper for lists with pagination.
 """
 from pydantic import BaseModel, field_serializer
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
 class WeatherBase(BaseModel):
     city: str
-    temperature: float
-    humidity: int
+    country: Optional[str] = None
     description: str
+    icon: Optional[str] = None
 
+    temperature: float
+    feels_like: Optional[float] = None
+    temp_min: Optional[float] = None
+    temp_max: Optional[float] = None
+
+    humidity: float
+    pressure: Optional[int] = None
+    sea_level: Optional[int] = None
+    grnd_level: Optional[int] = None
+
+    wind_speed: Optional[float] = None
+    wind_deg: Optional[int] = None
+    wind_gust: Optional[float] = None
+
+    visibility: Optional[int] = None
+    clouds: Optional[int] = None
+    rain_1h: Optional[float] = None
+    rain_3h: Optional[float] = None
+
+    sunrise: Optional[int] = None
+    sunset: Optional[int] = None
 
 class WeatherCreate(WeatherBase):
     """Schema for creating new weather entries (input)."""

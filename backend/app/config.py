@@ -2,6 +2,7 @@
 import os
 from dotenv import load_dotenv
 from typing import List
+from pydantic_settings import BaseSettings
 
 load_dotenv()  
 
@@ -35,3 +36,11 @@ HUMIDITY_MAX: int = int(os.getenv("HUMIDITY_MAX", 100))
 
 # --- LOGGING ---
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+
+class Settings(BaseSettings):
+    BACKEND_CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
+settings = Settings()

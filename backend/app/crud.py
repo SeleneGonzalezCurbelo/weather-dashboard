@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 def validate_weather_data(data: Dict[str, Any], city: str) -> Dict[str, Any]:
     """
-    Validate the structure and values of fetched weather data.
+    Validate the structure and values of fetched weather data and map to DB fields.
 
     Args:
         data (dict): Raw weather data from the API.
@@ -43,10 +43,15 @@ def validate_weather_data(data: Dict[str, Any], city: str) -> Dict[str, Any]:
 
     main = data.get("main", {})
     weather_list = data.get("weather", [{}])
-    
+    wind = data.get("wind", {})
+    rain = data.get("rain", {})
+    clouds = data.get("clouds", {})
+    sys = data.get("sys", {})
+
     temp = main.get("temp")
     humidity = main.get("humidity")
     desc = weather_list[0].get("description") if weather_list else "No description available"
+    icon = weather_list[0].get("icon") if weather_list else None
     name = data.get("name")
 
     if name is None or temp is None or humidity is None:
@@ -59,9 +64,31 @@ def validate_weather_data(data: Dict[str, Any], city: str) -> Dict[str, Any]:
 
     return {
         "city": name,
+        "country": sys.get("country"),
+        "description": desc,
+        "icon": icon,
+
         "temperature": temp,
+        "feels_like": main.get("feels_like"),
+        "temp_min": main.get("temp_min"),
+        "temp_max": main.get("temp_max"),
+
         "humidity": humidity,
-        "description": desc
+        "pressure": main.get("pressure"),
+        "sea_level": main.get("sea_level"),
+        "grnd_level": main.get("grnd_level"),
+
+        "wind_speed": wind.get("speed"),
+        "wind_deg": wind.get("deg"),
+        "wind_gust": wind.get("gust"),
+
+        "visibility": data.get("visibility"),
+        "clouds": clouds.get("all"),
+        "rain_1h": rain.get("1h"),
+        "rain_3h": rain.get("3h"),
+
+        "sunrise": sys.get("sunrise"),
+        "sunset": sys.get("sunset"),
     }
 
 
@@ -91,15 +118,10 @@ def save_weather(city: str, db=None) -> None:
         new_session = True
 
     try:
-        weather_entry = Weather(
-            city=validated_data["city"],
-            temperature=validated_data["temperature"],
-            humidity=validated_data["humidity"],
-            description=validated_data["description"]
-        )
+        weather_entry = Weather(**validated_data)
         db.add(weather_entry)
         db.commit()
-        logger.info(f"Saved weather data for {city} to the database.")
+        logger.info(f"Saved enriched weather data for {city} to the database.")
     except Exception as e:
         db.rollback()
         raise DatabaseError(f"Failed to save weather for {city}: {e}")

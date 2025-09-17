@@ -16,6 +16,7 @@ The frontend (React) will be added in upcoming iterations.
 - [Running Tests](#running-tests)
 - [API Endpoints](#api-endpoints)
 - [Background Jobs (Scheduler)](#background-jobs-scheduler)
+- [Frontend (React Dashboard)](#frontend-react-dashboard)
 - [Disclaimer](#disclaimer)
 
 ---
@@ -32,6 +33,8 @@ The frontend (React) will be added in upcoming iterations.
 ---
 
 ## Project Structure
+
+### Backend
 
 ```
 weather-dashboard/
@@ -59,6 +62,26 @@ weather-dashboard/
 └── README.md
 ```
 
+### Frontend
+
+```
+frontend/
+├── public/
+├── src/
+│ ├── components/
+│ │ ├── Header.jsx
+│ │ ├── HistoryTable.jsx
+│ │ ├── SearchBar.jsx
+│ │ ├── WeatherSummary.jsx
+│ │ |── TemperatureChart.jsx
+│ │ └── TemperatureHistory.jsx
+│ ├── App.jsx
+│ ├── index.css
+│ └── index.js
+├── package.json
+└── README.md
+```
+
 ---
 
 ## Requirements
@@ -76,6 +99,8 @@ pip install -r backend/requirements.txt
 ---
 
 ## Getting Started
+
+### Backend 
 
 1. Clone the repository:
 
@@ -100,6 +125,19 @@ docker-compose up --build
 4. Access the backend FastAPI:
 - [API Docs](http://localhost:8000/docs)
 - [Health check](http://localhost:8000/)
+
+### Frontend
+
+1. Go into the frontend folder:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+The app will run on http://localhost:5173/.
+
 ---
 
 ## Running Tests
@@ -126,13 +164,15 @@ pytest
 
 ## API Endpoints
 
-| Method | Endpoint                  | Description                                        |
-| ------ | ------------------------- | -------------------------------------------------- |
-| `GET`  | `/`                       | Health check                                       |
-| `GET`  | `/weather/{city}`         | Fetch real-time weather for a city   |
-| `GET`  | `/weather/save/{city}`    | Fetch and save weather data into DB                |
-| `GET`  | `/weather/history`        | List all saved weather records (paginated)         |
-| `GET`  | `/weather/history/{city}` | List saved records for a specific city (paginated) |
+| Method | Endpoint                        | Description                                            |
+| ------ | ------------------------------- | ------------------------------------------------------ |
+| `GET`  | `/`                             | Health check — backend running                         |
+| `GET`  | `/weather/{city}`               | Fetch current weather from external API                |
+| `POST` | `/weather/save/{city}`          | Fetch current weather and save to DB                   |
+| `GET`  | `/weather/history`              | List all saved weather records (paginated)             |
+| `GET`  | `/weather/history/{city}`       | List saved records for a specific city (paginated)     |
+| `GET`  | `/weather/daily-summary/{city}` | Compute daily summary (min/max/avg) metrics for a city |
+| `GET`  | `/weather/latest/{city}`        | Retrieve most recent weather record for a city         |
 
 ---
 
@@ -147,6 +187,20 @@ If you want to customize the interval or the list of tracked cities, update the 
 ```
 app/scheduler.py
 ```
+
+---
+
+## Frontend (React Dashboard)
+
+The frontend is a React app that displays real-time and historical weather data from the backend.
+
+### Features
+
+- Search for a city and display current weather summary  
+- View temperature history as a chart or table  
+- Switch between chart and table tabs  
+
+
 
 ---
 

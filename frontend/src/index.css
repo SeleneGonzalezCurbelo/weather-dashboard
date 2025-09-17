@@ -70,3 +70,36 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.amarillo {
+  background-color: yellow;
+}
+
+.rojo {
+  background-color: red;
+}
+
+.verde {
+  background-color: green;
+}
+
+.azul {
+  background-color: blue;
+}
+
+.gris {
+  background-color: gray;
+}
+
+.naranja {
+  background-color: orange;
+}
+
+.morado {
+  background-color: purple;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
