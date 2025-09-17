@@ -1,11 +1,12 @@
 """
 OpenWeather Adapter.
 
-Encapsula la comunicación con OpenWeather API y maneja errores.
+Encapsulates communication with the OpenWeather API and handles errors.
 
-Funciones:
+Functions:
 - get_weather(city: str) -> dict
-    Obtiene el clima actual de la ciudad en formato JSON y lanza APIError si falla.
+    Fetches the current weather for a city in JSON format.
+    Raises APIError if the request fails.
 """
 import requests
 from app.config import settings, OPENWEATHER_BASE_URL, OPENWEATHER_API_KEY
