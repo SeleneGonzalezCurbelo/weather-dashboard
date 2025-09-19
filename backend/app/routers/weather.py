@@ -22,6 +22,8 @@ from app.services.weather_service import (
     fetch_5day_forecast
 )
 from app.schemas import PaginatedWeatherResponse
+import requests
+from app.config import OPENWEATHER_API_KEY
 
 router = APIRouter()
 
@@ -137,3 +139,16 @@ def forecast(city: str):
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/geocode")
+def geocode(lat: float = Query(...), lon: float = Query(...)):
+    """
+    Reverse geocode coordinates to city name using OpenWeather API.
+    """
+    url = f"http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit=1&appid={OPENWEATHER_API_KEY}"
+    res = requests.get(url)
+    res.raise_for_status()
+    data = res.json()
+    if data:
+        return {"city": data[0]["name"]}
+    return {"city": "Arrecife"}  

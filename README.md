@@ -203,10 +203,15 @@ The frontend is a React app that displays real-time and historical weather data 
 ### Features
 
 - Search for a city and display current weather summary  
-- View temperature history as a chart or table  
+- View temperature history as a chart or table (hourly and daily breakdown)  
+- Chart shows temperature with min/max markers and detailed tooltip including:
+  - Humidity
+  - Wind speed and cardinal direction
+  - Weather icon
 - Switch between chart and table tabs  
-
-
+- 5-day forecast available even if historical DB data is missing
+- Automatic user geolocation 
+- Future: predictive models and weather alerts 
 
 ---
 
