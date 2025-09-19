@@ -26,6 +26,7 @@ from app.services.openweather_adapter import get_weather
 from app.schemas import PaginatedWeatherResponse
 from fastapi import HTTPException
 from datetime import date, timedelta
+from app.services.openweather_adapter import get_5day_forecast
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,30 @@ def get_daily_summary(city: str, db: Session):
 
 def get_latest_weather(city: str, db: Session):
     record = db.query(Weather).filter(Weather.city == city).order_by(Weather.created_at.desc()).first()
-    if not record:
-        raise HTTPException(status_code=404, detail=f"No weather data found for {city}")
-    return record
+    if record:
+        return record
+    return fetch_current_weather(city)
+
+def fetch_5day_forecast(city: str):
+    """
+    Fetch the 5-day forecast for a given city from the external API.
+    Returns a list of dicts, each representing a forecast record.
+    """
+    data = get_5day_forecast(city)
+    if not data or "list" not in data:
+        return []
+
+    forecast = []
+    for item in data["list"]:
+        forecast.append({
+            "created_at": item.get("dt_txt"),
+            "temperature": item.get("main", {}).get("temp"),
+            "feels_like": item.get("main", {}).get("feels_like"),
+            "humidity": item.get("main", {}).get("humidity"),
+            "pressure": item.get("main", {}).get("pressure"),
+            "wind_speed": item.get("wind", {}).get("speed"),
+            "wind_deg": item.get("wind", {}).get("deg"),
+            "cloudiness": item.get("clouds", {}).get("all"),
+            "icon": item.get("weather", [{}])[0].get("icon"),
+        })
+    return forecast

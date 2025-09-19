@@ -18,7 +18,8 @@ from app.services.weather_service import (
     save_weather_data,
     get_weather_history,
     get_daily_summary,
-    get_latest_weather
+    get_latest_weather,
+    fetch_5day_forecast
 )
 from app.schemas import PaginatedWeatherResponse
 
@@ -113,3 +114,26 @@ def latest_weather(city: str, db: Session = Depends(get_db)):
     WeatherResponse object with all recorded metrics.
     """
     return get_latest_weather(city, db=db)
+
+@router.get("/forecast/{city}")
+def forecast(city: str):
+    """
+    Fetch 5-day weather forecast from external API.
+
+    Parameters:
+    -----------
+    city : str
+        Name of the city to fetch the forecast for.
+
+    Returns:
+    --------
+    List[dict]
+        List of weather records for the next 5 days with temperature, humidity, wind, cloudiness, and icon.
+    """
+    try:
+        data = fetch_5day_forecast(city)
+        if not data:
+            raise HTTPException(status_code=404, detail=f"No forecast available for {city}")
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

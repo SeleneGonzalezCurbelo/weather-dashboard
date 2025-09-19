@@ -54,11 +54,3 @@ def get_weather(city: str, units: str = "metric", lang: str = "en") -> dict:
         raise APIError(f"Error fetching weather for {city}: {str(e)}")
 
     return response.json()
-
-if __name__ == "__main__":
-    city = "Madrid"
-    try:
-        data = get_weather(city)
-        print(f"Weather in {city}: {data['main']['temp']}°C, {data['weather'][0]['description']}")
-    except APIError as e:
-        print(f"Failed to fetch weather: {e.message}")

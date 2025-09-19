@@ -1,90 +1,75 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { TEChart } from "tw-elements-react";
+import { flattenByDayAndHour } from "../utils/weatherHelpers";
+import { windDegToDir } from "../utils/weatherHelpers";
 
-export default function TemperatureChart({ city, unit }) {
-  const [chartData, setChartData] = useState([]);
+export default function TemperatureChart({ unit, history }) {
+  const flattenedHistory = useMemo(() => flattenByDayAndHour(history), [history]);
 
-  useEffect(() => {
-    if (!city) return;
+  if (!flattenedHistory.length) return <p className="text-gray-500">No data available</p>;
 
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`http://localhost:8000/weather/history/${city}?limit=20`);
-        if (!res.ok) throw new Error("Error fetching history");
-        const data = await res.json();
+  const temps = flattenedHistory.map(r => (unit === "C" ? r.temperature : r.temperature != null ? Math.round((r.temperature * 9)/5 + 32) : null));
 
-        const transformed = data.records.map((r) => ({
-          date: new Date(r.created_at).toLocaleTimeString(),
-          temperature:
-            unit === "C"
-              ? r.temperature ?? 0
-              : r.temperature != null
-              ? Math.round((r.temperature * 9) / 5 + 32)
-              : 0,
-        }));
-
-        setChartData(transformed.reverse());
-      } catch (err) {
-        console.error(err);
-        setChartData([]);
-      }
-    };
-
-    fetchData();
-  }, [city, unit]);
-
-  if (!chartData.length) return <p className="text-gray-500">Cargando gráfica...</p>;
-
-  const temps = chartData.map((d) => d.temperature);
   const maxIndex = temps.indexOf(Math.max(...temps));
   const minIndex = temps.indexOf(Math.min(...temps));
 
+  const chartData = flattenedHistory.map((r, i) => ({
+    label: `${r.day} ${r.hour}`,
+    value: temps[i],
+    humidity: r.humidity,
+    wind_speed: r.wind_speed,
+    wind_deg: r.wind_deg,
+  }));
+  
   return (
-    <div className="w-full h-full">
-      <TEChart
-        className="w-full h-full"
-        type="line"
-        data={{
-          labels: chartData.map((d) => d.date),
-          datasets: [
-            {
-              label: `Temperature (°C)`,
-              data: temps,
-              borderColor: "rgb(59, 130, 246)",
-              backgroundColor: "rgba(59, 130, 246, 0.2)",
-              tension: 0.3,
-              fill: true,
-              pointRadius: chartData.map((_, i) =>
-                i === maxIndex || i === minIndex ? 6 : 3
-              ),
-              pointBackgroundColor: chartData.map((_, i) =>
-                i === maxIndex ? "red" : i === minIndex ? "green" : "rgb(59, 130, 246)"
-              ),
-            },
-          ],
-        }}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (tooltipItem) => {
-                  const value = tooltipItem.parsed.y;
-                  if (tooltipItem.dataIndex === maxIndex) return `Max: ${value} °${unit}`;
-                  if (tooltipItem.dataIndex === minIndex) return `Min: ${value} °${unit}`;
-                  return `${value} °${unit}`;
-                },
+    <TEChart
+      className="w-full h-full"
+      type="line"
+      data={{
+        labels: chartData.map(d => d.label),
+        datasets: [
+          {
+            label: `Temperature (°${unit})`,
+            data: chartData.map(d => d.value),
+            borderColor: "rgb(59, 130, 246)",
+            backgroundColor: "rgba(59, 130, 246, 0.2)",
+            tension: 0.3,
+            fill: true,
+            pointRadius: chartData.map((_, i) => (i === maxIndex || i === minIndex ? 6 : 3)),
+            pointBackgroundColor: chartData.map((_, i) =>
+              i === maxIndex ? "red" : i === minIndex ? "green" : "rgb(59, 130, 246)"
+            ),
+          },
+        ],
+      }}
+      options={{
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (tooltipItem) => {
+                const record = chartData[tooltipItem.dataIndex];
+                const tempLabel = tooltipItem.dataIndex === maxIndex
+                  ? `Max: ${record.value} °${unit}`
+                  : tooltipItem.dataIndex === minIndex
+                  ? `Min: ${record.value} °${unit}`
+                  : `${record.value} °${unit}`;
+                return [
+                  tempLabel,
+                  `Humidity: ${record.humidity ?? "–"} %`,
+                  `Wind: ${record.wind_speed ?? "–"} m/s ${windDegToDir(record.wind_deg)}`,
+                ];
               },
             },
           },
-          scales: {
-            x: { title: { display: true, text: "Hour", color: "#374151", font: { size: 14, weight: "bold" } }, ticks: { color: "#374151" }, grid: { color: "#e5e7eb" } },
-            y: { title: { display: true, text: `Temperature (°${unit})`, color: "#374151", font: { size: 14, weight: "bold" } }, ticks: { color: "#374151" }, grid: { color: "#e5e7eb" } },
-          },
-        }}
-      />
-    </div>
+        },
+        scales: {
+          x: { title: { display: true, text: "Date & Hour" } },
+          y: { title: { display: true, text: `Temperature (°${unit})` } },
+        },
+      }}
+    />
   );
 }

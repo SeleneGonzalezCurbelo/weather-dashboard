@@ -1,29 +1,41 @@
 import { useEffect, useState } from "react";
+import { flattenByDayAndHour } from "../utils/weatherHelpers";
+import { windDegToDir } from "../utils/weatherHelpers";
+import { 
+  WiCloud, WiDaySunny, WiRain, WiCloudy, WiShowers, WiStrongWind, WiWindDeg 
+} from "react-icons/wi";
 
-export default function HistoryTable({ city, unit }) {
-  const [history, setHistory] = useState([]);
+export default function HistoryTable({ unit, history }) {
+  const [flattenedHistory, setFlattenedHistory] = useState([]);
+  const iconMap = {
+    "01d": <WiDaySunny />,
+    "01n": <WiDaySunny />,
+    "02d": <WiCloud />,
+    "02n": <WiCloud />,
+    "03d": <WiCloudy />,
+    "03n": <WiCloudy />,
+    "04d": <WiCloudy />,
+    "04n": <WiCloudy />,
+    "09d": <WiShowers />,
+    "09n": <WiShowers />,
+    "10d": <WiRain />,
+    "10n": <WiRain />,
+    "11d": <WiRain />,
+    "11n": <WiRain />,
+    "13d": <WiDaySunny />,
+    "13n": <WiDaySunny />,
+    "50d": <WiCloudy />,
+    "50n": <WiCloudy />,
+  };
 
   useEffect(() => {
-    if (!city) return;
+    if (!history || history.length === 0) return;
+    setFlattenedHistory(flattenByDayAndHour(history));
+  }, [history]);
 
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`http://localhost:8000/weather/history/${city}?limit=20`);
-        if (!res.ok) throw new Error("Error fetching history");
-        const data = await res.json();
-        setHistory(data.records);
-      } catch (err) {
-        console.error(err);
-        setHistory([]);
-      }
-    };
-
-    fetchData();
-  }, [city]);
-
-  if (!history.length) return <p className="text-gray-500">Loading history...</p>;
-
-  const tempValues = history.map(r =>
+  if (!flattenedHistory.length) return <p className="text-gray-500">No history available</p>;
+  console.log(flattenedHistory);
+  const tempValues = flattenedHistory.map(r =>
     unit === "C" ? r.temperature : r.temperature != null ? Math.round((r.temperature * 9) / 5 + 32) : null
   );
   const maxTemp = Math.max(...tempValues);
@@ -34,18 +46,19 @@ export default function HistoryTable({ city, unit }) {
       <table className="w-full border border-gray-300 table-fixed">
         <thead className="bg-gray-200">
           <tr>
-            <th className="border border-gray-300 px-2 py-1 text-center">Time</th>
+            <th className="border border-gray-300 px-2 py-1 text-center">Date</th>
+            <th className="border border-gray-300 px-2 py-1 text-center">Hour</th>
             <th className="border border-gray-300 px-2 py-1 text-center">Weather</th>
             <th className="border border-gray-300 px-2 py-1 text-center">Temp (°{unit})</th>
             <th className="border border-gray-300 px-2 py-1 text-center">Humidity (%)</th>
             <th className="border border-gray-300 px-2 py-1 text-center">Wind Direction (°)</th>
             <th className="border border-gray-300 px-2 py-1 text-center">Wind Speed (m/s)</th>
-            <th className="border border-gray-300 px-2 py-1 text-center">Precipitation (%)</th>
-            <th className="border border-gray-300 px-2 py-1 text-center">Rain (mm)</th>
+            <th className="border border-gray-300 px-2 py-1 text-center">Cloudiness (%)</th>
           </tr>
         </thead>
         <tbody>
-          {history.map((record, index) => {
+          {flattenedHistory.map((record, index) => {
+            const showDate = index === 0 || record.day !== flattenedHistory[index - 1].day;
             const temp =
               unit === "C"
                 ? record.temperature
@@ -57,7 +70,7 @@ export default function HistoryTable({ city, unit }) {
 
             return (
               <tr
-                key={record.id}
+                key={record.id ?? `${record.created_at}-${index}`}
                 className={`border-b ${
                   isMax
                     ? "bg-red-100 font-bold"
@@ -68,14 +81,14 @@ export default function HistoryTable({ city, unit }) {
                     : "bg-gray-50 hover:bg-gray-100"
                 }`}
               >
-                <td className="border border-gray-300 px-2 py-1 text-center">{new Date(record.created_at).toLocaleTimeString()}</td>
-                <td className="border border-gray-300 px-2 py-1 text-center">{record.description || "–"}</td>
+                <td className="border border-gray-300 px-2 py-1 text-center">{showDate ? record.day : ""}</td>
+                <td className="border border-gray-300 px-2 py-1 text-center">{record.hour}</td>
+                <td className="border border-gray-300 px-2 py-1 text-center">{iconMap[record.icon] || "–"}</td>
                 <td className="border border-gray-300 px-2 py-1 text-center">{temp != null ? temp : "–"}</td>
                 <td className="border border-gray-300 px-2 py-1 text-center">{record.humidity ?? "–"}</td>
-                <td className="border border-gray-300 px-2 py-1 text-center">{record.wind_deg ?? "–"}</td>
+                <td className="border border-gray-300 px-2 py-1 text-center">{windDegToDir(record.wind_deg)}</td>
                 <td className="border border-gray-300 px-2 py-1 text-center">{record.wind_speed ?? "–"}</td>
-                <td className="border border-gray-300 px-2 py-1 text-center">{record.precip_prob ?? "–"}</td>
-                <td className="border border-gray-300 px-2 py-1 text-center">{record.rain_1h ?? "–"}</td>
+                <td className="border border-gray-300 px-2 py-1 text-center">{record.cloudiness ?? "–"}</td>
               </tr>
             );
           })}
