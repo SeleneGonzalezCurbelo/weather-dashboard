@@ -1,38 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  WiCloud,
-  WiDaySunny,
-  WiRain,
-  WiCloudy,
-  WiShowers,
-  WiStrongWind,
-  WiWindDeg,
-} from "react-icons/wi";
+import { weatherEmojis, metricEmojis } from "../utils/icons";
+import { formattedDate } from "../utils/date";
+import { windDegToDir } from "../utils/weatherHelpers";
 
 export default function WeatherSummary({ city }) {
   const [latest, setLatest] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  const iconMap = {
-    "01d": <WiDaySunny size={64} />,
-    "01n": <WiDaySunny size={64} />,
-    "02d": <WiCloud size={64} />,
-    "02n": <WiCloud size={64} />,
-    "03d": <WiCloudy size={64} />,
-    "03n": <WiCloudy size={64} />,
-    "04d": <WiCloudy size={64} />,
-    "04n": <WiCloudy size={64} />,
-    "09d": <WiShowers size={64} />,
-    "09n": <WiShowers size={64} />,
-    "10d": <WiRain size={64} />,
-    "10n": <WiRain size={64} />,
-    "11d": <WiRain size={64} />,
-    "11n": <WiRain size={64} />,
-    "13d": <WiDaySunny size={64} />,
-    "13n": <WiDaySunny size={64} />,
-    "50d": <WiCloudy size={64} />,
-    "50n": <WiCloudy size={64} />,
-  };
 
   useEffect(() => {
     if (!city) {
@@ -53,6 +26,8 @@ export default function WeatherSummary({ city }) {
           country: data.sys?.country || "",
           temperature: data.main?.temp,
           feels_like: data.main?.feels_like,
+          humidity: data.main?.humidity,
+          pressure: data.main?.pressure,
           visibility: data.visibility,
           wind_speed: data.wind?.speed,
           wind_deg: data.wind?.deg,
@@ -64,7 +39,9 @@ export default function WeatherSummary({ city }) {
       } catch (err) {
         console.error("API failed, trying DB fallback:", err);
         try {
-          const fallbackRes = await fetch(`http://localhost:8000/weather/history/${encodeURIComponent(city)}?limit=1`);
+          const fallbackRes = await fetch(
+            `http://localhost:8000/weather/history/${encodeURIComponent(city)}?limit=1`
+          );
           const fallbackData = await fallbackRes.json();
           setLatest(fallbackData.records[0] || null);
         } catch (dbErr) {
@@ -79,19 +56,61 @@ export default function WeatherSummary({ city }) {
     fetchLatest();
   }, [city]);
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
-  if (!latest) return <p className="text-gray-500">No data available</p>;
+  if (loading) return <p className="text-white">Loading...</p>;
+  if (!latest) return <p className="text-white">No data available</p>;
 
   return (
-    <div className="p-4 border rounded bg-white shadow-md text-center">
-      <div className="text-gray-500 text-sm mb-2">{new Date(latest.created_at).toLocaleString()}</div>
-      <div className="font-bold text-xl mb-4">{latest.city}, {latest.country}</div>
-      <div className="flex justify-center mb-4">{iconMap[latest.icon] || <WiDaySunny size={64} />}</div>
-      <div className="text-4xl font-bold mb-2">{latest.temperature != null ? Math.round(latest.temperature) : "--"}°C</div>
-      <div className="flex justify-around items-center mb-4 text-gray-600">
-        <div className="flex flex-col items-center"><span>👁</span><span className="text-sm">{latest.visibility ? latest.visibility/1000 : "--"} km</span></div>
-        <div className="flex flex-col items-center"><WiStrongWind size={24} /><span className="text-sm">{latest.wind_speed ?? "--"} m/s</span></div>
-        <div className="flex flex-col items-center"><WiWindDeg size={24} style={{ transform: `rotate(${latest.wind_deg ?? 0}deg)` }} /><span className="text-sm">{latest.wind_deg ?? "--"}°</span></div>
+    <div className="max-w-md mx-auto rounded-[2rem] shadow-xl card-bg border border-white p-6 flex flex-col items-center space-y-6">
+      <div className="flex justify-between items-center w-full p-4">
+        {/* Ciudad, fecha y temperatura */}
+        <div className="flex flex-col justify-center">
+          <h2 className="text-3xl font-extrabold text-white">
+            {latest.city}, {latest.country}
+          </h2>
+          <p className="text-sub text-sm mt-1">{formattedDate(latest)}</p>
+
+          {/* Temperatura y sensación térmica */}
+          <div className="mt-2">
+            <div className="text-5xl font-bold text-white">
+              {latest.temperature != null ? Math.round(latest.temperature) : "--"}°C
+            </div>
+            <p className="text-sm text-sub mt-1">
+              Feels like: {latest.feels_like != null ? Math.round(latest.feels_like) : "--"}°C
+            </p>
+          </div>
+        </div>
+
+        {/* Icono */}
+        <div className="text-[7rem] flex items-center justify-center">
+          {weatherEmojis[latest.icon] || "🌤"}
+        </div>
+      </div>
+ 
+
+      {/* Detalles */}
+      <div className="grid grid-cols-3 gap-4 w-full mt-6 px-2 pb-2">
+        <div className="flex flex-col items-center p-3 rounded-2xl border border-white card-bg shadow-sm rounded-[2rem]">
+
+          <div className="text-3xl">{metricEmojis.humidity}</div>
+          <span className="font-bold mt-1 text-white">{latest.humidity ?? "--"}%</span>
+          <span className="text-xs text-sub mt-1">Humidity</span>
+        </div>
+
+        <div className="flex flex-col items-center p-3 rounded-2xl border border-white card-bg shadow-sm rounded-[2rem]">
+
+          <div className="text-3xl">{metricEmojis.pressure}</div>
+          <span className="font-bold mt-1 text-white">{latest.pressure ?? "--"} hPa</span>
+          <span className="text-xs text-sub mt-1">Pressure</span>
+        </div>
+
+        <div className="flex flex-col items-center p-3 rounded-2xl border border-white card-bg shadow-sm rounded-[2rem]">
+          <div className="text-3xl">{metricEmojis.wind}</div>
+          <span className="font-bold mt-1 text-white">
+            {latest.wind_speed ?? "--"} m/s{" "}
+            {latest.wind_deg != null ? `(${windDegToDir(latest.wind_deg)})` : ""}
+          </span>
+          <span className="text-xs text-sub mt-1">Wind</span>
+        </div>
       </div>
     </div>
   );

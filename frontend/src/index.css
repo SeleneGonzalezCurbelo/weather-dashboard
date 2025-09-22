@@ -2,104 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* Paleta principal */
+.bg-primary { background-color: #1e3a8a; }      /* azul oscuro */
+.bg-primary-hover { background-color: #1e3a8a; } /* mismo azul, sin cambio al hover */
+.text-white { color: white; }
+.text-black { color: black; }
+.border-none { border: none; }
+.border-white { border: white; }
+.placeholder-white::placeholder { color: white; opacity: 0.8; }
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Cards y métricas */
+.card-bg { background-color: #1e3a8a; }
+.text-main { color: #1e293b; }
+.text-sub { color: white; opacity: 0.5; }
+.border-secondary { border-color: #cbd5e1; }
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+.border-humidity { border-color: #38bdf8; }
+.bg-humidity { background: linear-gradient(to bottom, #ffffff, #38bdf810); }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+.border-pressure { border-color: #a78bfa; }
+.bg-pressure { background: linear-gradient(to bottom, #ffffff, #a78bfa10); }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-.amarillo {
-  background-color: yellow;
-}
-
-.rojo {
-  background-color: red;
-}
-
-.verde {
-  background-color: green;
-}
-
-.azul {
-  background-color: blue;
-}
-
-.gris {
-  background-color: gray;
-}
-
-.naranja {
-  background-color: orange;
-}
-
-.morado {
-  background-color: purple;
-}
-
-canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
+.border-wind { border-color: #34d399; }
+.bg-wind { background: linear-gradient(to bottom, #ffffff, #34d39910); }

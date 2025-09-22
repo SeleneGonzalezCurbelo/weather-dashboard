@@ -6,7 +6,7 @@ import WeatherSummary from "./components/WeatherSummary";
 import TemperatureHistory from "./components/TemperatureHistory";
 
 function App() {
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState(null);
   const [loadingCity, setLoadingCity] = useState(true);
 
   useEffect(() => {
@@ -45,14 +45,16 @@ function App() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-y-auto">
       <Header />
-
       <div className="max-w-md mx-auto px-4 py-4 flex flex-col space-y-4">
-        <SearchBar onSearch={setCity} />
-        {!loadingCity && <WeatherSummary city={city} />}
+        <div className="py-2">
+          <SearchBar onSearch={setCity} />
+        </div>
+        <div className="py-2">
+          {!loadingCity && <WeatherSummary city={city} />}
+        </div>
       </div>
-
       <div className="flex-1 flex flex-col p-4 overflow-hidden">
         {!loadingCity && <TemperatureHistory city={city} />}
       </div>

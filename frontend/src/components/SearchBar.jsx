@@ -6,26 +6,29 @@ export default function SearchBar({ onSearch }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSearch(search.trim());
+    const value = search.trim();
+    onSearch(value === "" ? null : value);
   };
 
+
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
+    <form onSubmit={handleSubmit} className="mb-6 w-full max-w-md mx-auto">
+      <div className="flex w-full rounded-full border border-white bg-transparent">
         <input
           type="text"
+          placeholder="Buscar ciudad..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search city"
-          className="flex-1 px-3 py-2 border rounded"
+          className="flex-auto px-4 py-2 text-white placeholder-white placeholder-opacity-100 bg-transparent border-none outline-none"
+
         />
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded flex items-center justify-center"
+          className="flex items-center justify-center px-4 py-2 text-white bg-transparent border-none rounded-l-xl"
         >
-          <FaSearch />
+          <FaSearch className="h-5 w-5" />
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }

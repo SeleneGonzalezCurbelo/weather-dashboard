@@ -38,6 +38,8 @@ HUMIDITY_MAX: int = int(os.getenv("HUMIDITY_MAX", 100))
 # --- LOGGING ---
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
+VITE_API_BASE_URL: str = os.getenv("VITE_API_BASE_URL")
+
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
