@@ -38,13 +38,13 @@ HUMIDITY_MAX: int = int(os.getenv("HUMIDITY_MAX", 100))
 # --- LOGGING ---
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
-VITE_API_BASE_URL: str = os.getenv("VITE_API_BASE_URL")
+FRONTEND_URL: str = os.getenv("FRONTEND_URL")
 
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        VITE_API_BASE_URL
+        FRONTEND_URL
     ]
 
 settings = Settings()

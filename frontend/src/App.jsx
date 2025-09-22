@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import WeatherSummary from "./components/WeatherSummary";
 import TemperatureHistory from "./components/TemperatureHistory";
+import { geocode } from "./services/api";
 
 function App() {
   const [city, setCity] = useState(null);
@@ -21,10 +22,7 @@ function App() {
         async (position) => {
           const { latitude, longitude } = position.coords;
           try {
-            const res = await fetch(
-              `http://localhost:8000/geocode?lat=${latitude}&lon=${longitude}`
-            );
-            const data = await res.json();
+            const data = await geocode(latitude, longitude);
             setCity(data.city || "Arrecife");
           } catch (err) {
             console.error("Failed to detect city:", err);
