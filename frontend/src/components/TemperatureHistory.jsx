@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import TemperatureChart from "./TemperatureChart";
 import HistoryTable from "./HistoryTable";
+import { getWeather, getForecast } from "../services/api";
 
 export default function TemperatureHistory({ city: propCity }) {
   const [activeTab, setActiveTab] = useState("chart");
@@ -17,22 +18,17 @@ export default function TemperatureHistory({ city: propCity }) {
       return;
     }
 
-    
-  
     let cancelled = false;
-    const fetchHistory = async () => {
+    const fetchData  = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/weather/forecast/${encodeURIComponent(city)}`);
-        if (!res.ok) throw new Error("API unavailable");
-        const data = await res.json();
-        if (cancelled) return;
+        const data = await getForecast(city);
+        if (!cancelled) setHistory(data || []);
         setHistory(data || []);
       } catch (err) {
         console.error("API failed, trying DB fallback:", err);
 
         try {
-          const fallbackRes = await fetch(`http://localhost:8000/weather/history/${encodeURIComponent(city)}?limit=20`);
-          const fallbackData = await fallbackRes.json();
+          const fallbackData = await getWeather(city, 20);
           if (!cancelled) setHistory(fallbackData.records || []);
         } catch (dbErr) {
           console.error("DB fallback failed:", dbErr);
@@ -41,7 +37,7 @@ export default function TemperatureHistory({ city: propCity }) {
       } 
     };
 
-    fetchHistory();
+    fetchData();
     return () => { cancelled = true; };
   }, [city]);
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { weatherEmojis, metricEmojis } from "../utils/icons";
 import { formattedDate } from "../utils/date";
 import { windDegToDir } from "../utils/weatherHelpers";
+import { getWeather, getForecast } from "../services/api";
 
 export default function WeatherSummary({ city }) {
   const [latest, setLatest] = useState(null);
@@ -16,9 +17,7 @@ export default function WeatherSummary({ city }) {
     const fetchLatest = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:8000/weather/${encodeURIComponent(city)}`);
-        if (!res.ok) throw new Error("API unavailable");
-        const data = await res.json();
+        const data = await getWeather(city);
 
         const formatted = {
           created_at: new Date(),
@@ -39,10 +38,7 @@ export default function WeatherSummary({ city }) {
       } catch (err) {
         console.error("API failed, trying DB fallback:", err);
         try {
-          const fallbackRes = await fetch(
-            `http://localhost:8000/weather/history/${encodeURIComponent(city)}?limit=1`
-          );
-          const fallbackData = await fallbackRes.json();
+          const fallbackData = await getForecast(city, 1);
           setLatest(fallbackData.records[0] || null);
         } catch (dbErr) {
           console.error("DB fallback failed:", dbErr);
