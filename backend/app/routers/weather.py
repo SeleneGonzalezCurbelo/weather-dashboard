@@ -145,8 +145,10 @@ def geocode(lat: float = Query(...), lon: float = Query(...)):
     """
     Reverse geocode coordinates to city name using OpenWeather API.
     """
-    url = f"http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit=1&appid={OPENWEATHER_API_KEY}"
+    url = f"https://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit=1&appid={OPENWEATHER_API_KEY}"
+    print("[Backend geocode] Fetching:", url)
     res = requests.get(url)
+    print("[Backend geocode] Status:", res.status_code, res.text)
     res.raise_for_status()
     data = res.json()
     if data:

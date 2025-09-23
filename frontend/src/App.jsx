@@ -13,20 +13,21 @@ function App() {
   useEffect(() => {
     const detect = async () => {
       if (!navigator.geolocation) {
-        console.log("[App] Geolocation not supported, fallback to Arrecife");
         setCity("Arrecife");
         setLoadingCity(false);
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
-        async ({ coords }) => {
-          console.log("[App] Got geolocation coords:", coords);
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("[App] Got geolocation coords:", position.coords);
+
           try {
-            const { city: detectedCity, weather } = await detectCity(coords.latitude, coords.longitude);
-            console.log("[App] Detected city:", detectedCity);
+            const { city, weather } = await detectCity(latitude, longitude);
+            setCity(city);
+            console.log("[App] Detected city:", city);
             console.log("[App] Initial weather data:", weather);
-            setCity(detectedCity);
           } catch (err) {
             console.error("[App] Failed to detect city:", err);
             setCity("Arrecife");
@@ -35,7 +36,7 @@ function App() {
           }
         },
         (err) => {
-          console.warn("[App] Geolocation denied or unavailable:", err);
+          console.warn("[App] Geolocation denied/unavailable:", err);
           setCity("Arrecife");
           setLoadingCity(false);
         }
