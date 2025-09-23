@@ -51,7 +51,7 @@ export default function WeatherSummary({ city }) {
 
     fetchLatest();
   }, [city]);
-
+  
   if (loading) return <p className="text-white">Loading...</p>;
   if (!latest) return <p className="text-white">No data available</p>;
 
