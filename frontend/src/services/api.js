@@ -36,51 +36,45 @@ export async function getForecast(city) {
 export async function geocode(lat, lon) {
   try {
     const url = `${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`;
-    console.log("Fetching geocode:", url);
+    console.log("[geocode] Fetching geocode URL:", url);
 
     const res = await fetch(url);
+    console.log("[geocode] Raw response:", res.status, res.statusText);
 
-    console.log("Geocode raw response:", res.status, res.statusText);
+    const data = await res.json();
+    console.log("[geocode] Parsed JSON:", data);
 
-    let data = null;
-    try {
-      data = await res.json();
-    } catch (parseErr) {
-      console.error("Failed to parse geocode JSON:", parseErr);
-    }
-
-    console.log("Geocode response body:", data);
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch geocode: ${res.status} ${res.statusText}`);
-    }
-
-    return data;
+    if (!res.ok) throw new Error(`Failed to fetch geocode: ${res.status}`);
+    return data; 
   } catch (err) {
-    console.error("Geocode failed:", err);
-    return { city: "Arrecife" };
+    console.error("[geocode] Error:", err);
+    return { city: "Arrecife" }; 
   }
 }
 
 export async function detectCity(lat, lon) {
   try {
-    const geoRes = await fetch(`${API_URL}/weather?lat=${lat}&lon=${lon}`);
-    if (!geoRes.ok) {
-      throw new Error("Failed to fetch geocode");
-    }
-    const geoData = await geoRes.json();
-    console.log("Geocode response:", geoData);
+    console.log("[detectCity] Detecting city for coords:", lat, lon);
+
+    const geoData = await geocode(lat, lon);
+    console.log("[detectCity] Geocode result:", geoData);
 
     const city = geoData.city;
+    console.log("[detectCity] Using city:", city);
+
     const weatherRes = await fetch(`${API_URL}/weather/${city}`);
-    if (!weatherRes.ok) {
-      throw new Error("Failed to fetch weather for city");
-    }
+    console.log("[detectCity] Weather response status:", weatherRes.status);
+
+    if (!weatherRes.ok) throw new Error("Failed to fetch weather for city");
+
     const weatherData = await weatherRes.json();
+    console.log("[detectCity] Weather data:", weatherData);
 
     return { city, weather: weatherData };
   } catch (err) {
-    console.error("Error detecting city:", err);
-    throw err;
+    console.error("[detectCity] Error:", err);
+    const fallbackRes = await fetch(`${API_URL}/weather/Arrecife`);
+    const weatherData = await fallbackRes.json();
+    return { city: "Arrecife", weather: weatherData };
   }
 }

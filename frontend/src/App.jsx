@@ -9,40 +9,40 @@ import { detectCity } from "./services/api";
 function App() {
   const [city, setCity] = useState(null);
   const [loadingCity, setLoadingCity] = useState(true);
-  const [weather, setWeather] = useState(null);
 
   useEffect(() => {
-    const init = async () => {
+    const detect = async () => {
       if (!navigator.geolocation) {
+        console.log("[App] Geolocation not supported, fallback to Arrecife");
         setCity("Arrecife");
         setLoadingCity(false);
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
+        async ({ coords }) => {
+          console.log("[App] Got geolocation coords:", coords);
           try {
-            const { city, weather } = await detectCity(latitude, longitude);
-            console.log("Detected city:", city);
-            setCity(city);
-            setWeather(weather); 
+            const { city: detectedCity, weather } = await detectCity(coords.latitude, coords.longitude);
+            console.log("[App] Detected city:", detectedCity);
+            console.log("[App] Initial weather data:", weather);
+            setCity(detectedCity);
           } catch (err) {
-            console.error("Failed to detect city:", err);
+            console.error("[App] Failed to detect city:", err);
             setCity("Arrecife");
           } finally {
             setLoadingCity(false);
           }
         },
         (err) => {
-          console.warn("Geolocation denied or unavailable:", err);
+          console.warn("[App] Geolocation denied or unavailable:", err);
           setCity("Arrecife");
           setLoadingCity(false);
         }
       );
     };
 
-    init();
+    detect();
   }, []);
 
   return (
@@ -53,7 +53,7 @@ function App() {
           <SearchBar onSearch={setCity} />
         </div>
         <div className="py-2">
-          {!loadingCity && <WeatherSummary city={city} initialWeather={weather} />}
+          {!loadingCity && <WeatherSummary city={city}/>}
         </div>
       </div>
       <div className="flex-1 flex flex-col p-4 overflow-hidden">
