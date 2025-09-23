@@ -23,7 +23,12 @@ function App() {
           const { latitude, longitude } = position.coords;
           try {
             const data = await geocode(latitude, longitude);
-            setCity(data.city || "Arrecife");
+            console.log("Geocode response:", data);
+            if (data && data.city) {
+              setCity(data.city);
+            } else {
+              setCity("Arrecife");
+            }
           } catch (err) {
             console.error("Failed to detect city:", err);
             setCity("Arrecife");

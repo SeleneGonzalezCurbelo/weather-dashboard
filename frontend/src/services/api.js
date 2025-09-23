@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function getWeather(city) {
   const res = await fetch(`${API_URL}/weather/${city}`);
-  if (!res.ok) throw new Error("Failed to fetch current weather");
+  if (!res.ok) throw new Error("Failed to fetch weather");
   return res.json();
 }
 
@@ -34,11 +34,12 @@ export async function getForecast(city) {
 }
 
 export async function geocode(lat, lon) {
-  const res = await fetch(`${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`);
-  if (!res.ok) {
-    const text = await res.text(); 
-    console.error("Geocode failed, response:", text);
-    throw new Error("Failed to fetch geocode");
+  try {
+    const res = await fetch(`${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`);
+    if (!res.ok) throw new Error("Failed to fetch geocode");
+    return res.json();
+  } catch (err) {
+    console.error("Geocode request failed:", err);
+    return { city: "Arrecife" };
   }
-  return res.json();
 }
