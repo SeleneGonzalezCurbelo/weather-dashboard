@@ -35,12 +35,29 @@ export async function getForecast(city) {
 
 export async function geocode(lat, lon) {
   try {
-    const res = await fetch(`${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`);
-    console.log(res)
-    if (!res.ok) throw new Error("Failed to fetch geocode");
-    return res.json();
+    const url = `${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`;
+    console.log("Fetching geocode:", url);
+
+    const res = await fetch(url);
+
+    console.log("Geocode raw response:", res.status, res.statusText);
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      console.error("Failed to parse geocode JSON:", parseErr);
+    }
+
+    console.log("Geocode response body:", data);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch geocode: ${res.status} ${res.statusText}`);
+    }
+
+    return data;
   } catch (err) {
-    console.error("Geocode request failed:", err);
+    console.error("Geocode failed:", err);
     return { city: "Arrecife" };
   }
 }
