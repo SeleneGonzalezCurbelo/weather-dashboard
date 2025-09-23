@@ -36,6 +36,7 @@ export async function getForecast(city) {
 export async function geocode(lat, lon) {
   try {
     const res = await fetch(`${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`);
+    console.log(res)
     if (!res.ok) throw new Error("Failed to fetch geocode");
     return res.json();
   } catch (err) {
