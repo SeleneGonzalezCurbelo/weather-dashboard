@@ -4,14 +4,15 @@ import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import WeatherSummary from "./components/WeatherSummary";
 import TemperatureHistory from "./components/TemperatureHistory";
-import { geocode } from "./services/api";
+import { detectCity } from "./services/api";
 
 function App() {
   const [city, setCity] = useState(null);
   const [loadingCity, setLoadingCity] = useState(true);
+  const [weather, setWeather] = useState(null);
 
   useEffect(() => {
-    const detectCity = async () => {
+    const init = async () => {
       if (!navigator.geolocation) {
         setCity("Arrecife");
         setLoadingCity(false);
@@ -22,13 +23,10 @@ function App() {
         async (position) => {
           const { latitude, longitude } = position.coords;
           try {
-            const data = await geocode(latitude, longitude);
-            console.log("Geocode response:", data);
-            if (data && data.city) {
-              setCity(data.city);
-            } else {
-              setCity("Arrecife");
-            }
+            const { city, weather } = await detectCity(latitude, longitude);
+            console.log("Detected city:", city);
+            setCity(city);
+            setWeather(weather); 
           } catch (err) {
             console.error("Failed to detect city:", err);
             setCity("Arrecife");
@@ -44,7 +42,7 @@ function App() {
       );
     };
 
-    detectCity();
+    init();
   }, []);
 
   return (
@@ -55,7 +53,7 @@ function App() {
           <SearchBar onSearch={setCity} />
         </div>
         <div className="py-2">
-          {!loadingCity && <WeatherSummary city={city} />}
+          {!loadingCity && <WeatherSummary city={city} initialWeather={weather} />}
         </div>
       </div>
       <div className="flex-1 flex flex-col p-4 overflow-hidden">
