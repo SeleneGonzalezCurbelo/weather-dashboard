@@ -64,7 +64,7 @@ export async function geocode(lat, lon) {
 
 export async function detectCity(lat, lon) {
   try {
-    const geoRes = await fetch(`${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`);
+    const geoRes = await fetch(`${API_URL}/weather?lat=${lat}&lon=${lon}`);
     if (!geoRes.ok) {
       throw new Error("Failed to fetch geocode");
     }
