@@ -4,25 +4,19 @@ import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import WeatherSummary from "./components/WeatherSummary";
 import TemperatureHistory from "./components/TemperatureHistory";
-import { detectCity, getWeather } from "./services/api";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 function App() {
   const [city, setCity] = useState(null);
-  const [initialWeather, setInitialWeather] = useState(null);
-  const [loadingCity, setLoadingCity] = useState(true);
+  const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const detect = async () => {
+    const detectCityAndWeather = async () => {
       if (!navigator.geolocation) {
-        try {
-          const weather = await getWeather("Arrecife");
-          setCity("Arrecife");
-          setInitialWeather(weather);
-        } catch {
-          setCity("Arrecife");
-        } finally {
-          setLoadingCity(false);
-        }
+        setCity("Arrecife");
+        fetchWeather("Arrecife");
         return;
       }
 
@@ -32,40 +26,46 @@ function App() {
           console.log("[App] Got geolocation coords:", position.coords);
 
           try {
-            const { city, weather } = await detectCity(latitude, longitude);
-            setCity(city);
-            setInitialWeather(weather);
-            console.log("[App] Detected city:", city);
-            console.log("[App] Initial weather data:", weather);
-          } catch {
-            console.error("[App] Failed to detect city");
-            try {
-              const weather = await getWeather("Arrecife");
-              setCity("Arrecife");
-              setInitialWeather(weather);
-            } catch {
-              setCity("Arrecife");
-            }
-          } finally {
-            setLoadingCity(false);
+            // 1️⃣ Detectar ciudad desde backend
+            const geoRes = await fetch(
+              `${API_URL}/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
+            );
+            const geoData = await geoRes.json();
+            const detectedCity = geoData.city || "Arrecife";
+            console.log("[App] Detected city:", detectedCity);
+            setCity(detectedCity);
+
+            // 2️⃣ Pedir el tiempo de la ciudad
+            await fetchWeather(detectedCity);
+          } catch (err) {
+            console.error("[App] Error detecting city or weather:", err);
+            setCity("Arrecife");
+            await fetchWeather("Arrecife");
           }
         },
-        async () => {
-          console.warn("[App] Geolocation denied/unavailable");
-          try {
-            const weather = await getWeather("Arrecife");
-            setCity("Arrecife");
-            setInitialWeather(weather);
-          } catch {
-            setCity("Arrecife");
-          } finally {
-            setLoadingCity(false);
-          }
+        (err) => {
+          console.warn("[App] Geolocation denied or unavailable:", err);
+          setCity("Arrecife");
+          fetchWeather("Arrecife");
         }
       );
     };
 
-    detect();
+    const fetchWeather = async (cityName) => {
+      try {
+        const weatherRes = await fetch(`${API_URL}/weather/${cityName}`);
+        const weatherData = await weatherRes.json();
+        console.log("[App] Weather data:", weatherData);
+        setWeather(weatherData);
+      } catch (err) {
+        console.error("[App] Failed to fetch weather:", err);
+        setWeather(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    detectCityAndWeather();
   }, []);
 
   return (
@@ -76,21 +76,13 @@ function App() {
           <SearchBar onSearch={setCity} />
         </div>
         <div className="py-2">
-          {!loadingCity && (
-            <WeatherSummary 
-              city={city}
-              initialWeather={initialWeather} 
-            />
+          {!loading && city && weather && (
+            <WeatherSummary city={city} weather={weather} />
           )}
         </div>
       </div>
       <div className="flex-1 flex flex-col p-4 overflow-hidden">
-        {!loadingCity && (
-          <TemperatureHistory 
-            city={city}
-            initialWeather={initialWeather} 
-          />
-        )}
+        {!loading && city && <TemperatureHistory city={city} />}
       </div>
     </div>
   );
