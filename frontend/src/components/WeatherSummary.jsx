@@ -4,13 +4,31 @@ import { formattedDate } from "../utils/date";
 import { windDegToDir } from "../utils/weatherHelpers";
 import { getWeather, getForecast } from "../services/api";
 
-export default function WeatherSummary({ city }) {
+export default function WeatherSummary({ city, initialWeather  }) {
   const [latest, setLatest] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!city) {
       setLatest(null);
+      return;
+    }
+    if (initialWeather) {
+      const formatted = {
+        created_at: new Date(),
+        city: initialWeather.name,
+        country: initialWeather.sys?.country || "",
+        temperature: initialWeather.main?.temp,
+        feels_like: initialWeather.main?.feels_like,
+        humidity: initialWeather.main?.humidity,
+        pressure: initialWeather.main?.pressure,
+        visibility: initialWeather.visibility,
+        wind_speed: initialWeather.wind?.speed,
+        wind_deg: initialWeather.wind?.deg,
+        icon: initialWeather.weather?.[0]?.icon,
+        alerts: [],
+      };
+      setLatest(formatted);
       return;
     }
 
@@ -50,7 +68,7 @@ export default function WeatherSummary({ city }) {
     };
 
     fetchLatest();
-  }, [city]);
+  }, [city, initialWeather]);
   
   if (loading) return <p className="text-white">Loading...</p>;
   if (!latest) return <p className="text-white">No data available</p>;

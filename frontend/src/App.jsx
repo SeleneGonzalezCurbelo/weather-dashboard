@@ -4,17 +4,25 @@ import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import WeatherSummary from "./components/WeatherSummary";
 import TemperatureHistory from "./components/TemperatureHistory";
-import { detectCity } from "./services/api";
+import { detectCity, getWeatherByCity } from "./services/api";
 
 function App() {
   const [city, setCity] = useState(null);
+  const [initialWeather, setInitialWeather] = useState(null);
   const [loadingCity, setLoadingCity] = useState(true);
 
   useEffect(() => {
     const detect = async () => {
       if (!navigator.geolocation) {
-        setCity("Arrecife");
-        setLoadingCity(false);
+        try {
+          const weather = await getWeatherByCity("Arrecife");
+          setCity("Arrecife");
+          setInitialWeather(weather);
+        } catch {
+          setCity("Arrecife");
+        } finally {
+          setLoadingCity(false);
+        }
         return;
       }
 
@@ -26,19 +34,33 @@ function App() {
           try {
             const { city, weather } = await detectCity(latitude, longitude);
             setCity(city);
+            setInitialWeather(weather);
             console.log("[App] Detected city:", city);
             console.log("[App] Initial weather data:", weather);
-          } catch (err) {
-            console.error("[App] Failed to detect city:", err);
-            setCity("Arrecife");
+          } catch {
+            console.error("[App] Failed to detect city");
+            try {
+              const weather = await getWeatherByCity("Arrecife");
+              setCity("Arrecife");
+              setInitialWeather(weather);
+            } catch {
+              setCity("Arrecife");
+            }
           } finally {
             setLoadingCity(false);
           }
         },
-        (err) => {
-          console.warn("[App] Geolocation denied/unavailable:", err);
-          setCity("Arrecife");
-          setLoadingCity(false);
+        async () => {
+          console.warn("[App] Geolocation denied/unavailable");
+          try {
+            const weather = await getWeatherByCity("Arrecife");
+            setCity("Arrecife");
+            setInitialWeather(weather);
+          } catch {
+            setCity("Arrecife");
+          } finally {
+            setLoadingCity(false);
+          }
         }
       );
     };
@@ -51,14 +73,21 @@ function App() {
       <Header />
       <div className="max-w-md mx-auto px-4 py-4 flex flex-col space-y-4">
         <div className="py-2">
-          <SearchBar onSearch={setCity} />
-        </div>
-        <div className="py-2">
-          {!loadingCity && <WeatherSummary city={city}/>}
+          {!loadingCity && (
+            <WeatherSummary 
+              city={city}
+              initialWeather={initialWeather} 
+            />
+          )}
         </div>
       </div>
       <div className="flex-1 flex flex-col p-4 overflow-hidden">
-        {!loadingCity && <TemperatureHistory city={city} />}
+        {!loadingCity && (
+          <TemperatureHistory 
+            city={city}
+            initialWeather={initialWeather} 
+          />
+        )}
       </div>
     </div>
   );

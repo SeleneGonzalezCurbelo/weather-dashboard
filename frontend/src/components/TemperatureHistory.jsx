@@ -3,7 +3,7 @@ import TemperatureChart from "./TemperatureChart";
 import HistoryTable from "./HistoryTable";
 import { getWeather, getForecast } from "../services/api";
 
-export default function TemperatureHistory({ city: propCity }) {
+export default function TemperatureHistory({ city: propCity, initialWeather }) {
   const [activeTab, setActiveTab] = useState("chart");
   const [city, setCity] = useState(propCity || "");
   const [history, setHistory] = useState([]);
@@ -15,6 +15,21 @@ export default function TemperatureHistory({ city: propCity }) {
   useEffect(() => {
     if (!city) {
       setHistory([]);
+      return;
+    }
+
+    if (initialWeather && history.length === 0) {
+      const mockRecord = {
+        created_at: new Date().toISOString(),
+        city: initialWeather.name,
+        temperature: initialWeather.main?.temp,
+        humidity: initialWeather.main?.humidity,
+        pressure: initialWeather.main?.pressure,
+        wind_speed: initialWeather.wind?.speed,
+        wind_deg: initialWeather.wind?.deg,
+        icon: initialWeather.weather?.[0]?.icon,
+      };
+      setHistory([mockRecord]);
       return;
     }
 
@@ -39,7 +54,7 @@ export default function TemperatureHistory({ city: propCity }) {
 
     fetchData();
     return () => { cancelled = true; };
-  }, [city]);
+  }, [city, initialWeather]);
 
   if (!city) return null;
   if (!history || history.length === 0) {
