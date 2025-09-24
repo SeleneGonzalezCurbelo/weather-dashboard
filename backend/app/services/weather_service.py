@@ -31,6 +31,9 @@ from app.services.openweather_adapter import get_5day_forecast
 logger = logging.getLogger(__name__)
 
 def fetch_current_weather(city: str) -> dict:
+    if not city or city.lower() == "geocode":
+        logger.warning(f"Invalid city name received: {city}")
+        raise HTTPException(status_code=400, detail=f"Invalid city name: {city}")
     return get_weather(city)
 
 def save_weather_data(city: str, db: Session):

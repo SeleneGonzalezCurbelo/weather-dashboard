@@ -73,6 +73,9 @@ function App() {
       <Header />
       <div className="max-w-md mx-auto px-4 py-4 flex flex-col space-y-4">
         <div className="py-2">
+          <SearchBar onSearch={setCity} />
+        </div>
+        <div className="py-2">
           {!loadingCity && (
             <WeatherSummary 
               city={city}

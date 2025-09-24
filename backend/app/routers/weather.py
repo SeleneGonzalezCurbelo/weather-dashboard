@@ -94,17 +94,21 @@ def weather_save(city: str, db: Session = Depends(get_db)):
     save_weather_data(city, db=db)
     return {"message": f"Weather for {city} saved successfully."}
 
-@router.get("/daily-summary/{city}")
-def daily_summary(city: str, db: Session = Depends(get_db)):
+@router.get("/weather/{city}")
+def get_weather_by_city(city: str):
     """
-    Compute daily summary (min/max/average) of weather metrics for a city.
-
-    Returns:
-    --------
-    Dictionary with min/max temperature, min/max humidity, average feels_like,
-    average pressure, min/max wind speed, and average cloudiness.
+    Get current weather for a city.
     """
-    return get_daily_summary(city, db=db)
+    try:
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric"
+        print(f"[Backend weather] Fetching: {url}")
+        res = requests.get(url)
+        print(f"[Backend weather] Status: {res.status_code}")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print(f"[Backend weather] Error: {e}")
+        raise e
 
 @router.get("/latest/{city}")
 def latest_weather(city: str, db: Session = Depends(get_db)):
@@ -140,8 +144,8 @@ def forecast(city: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/geocode")
-def geocode(lat: float = Query(...), lon: float = Query(...)):
+@router.get("/reverse-geocode")
+def reverse_geocode(lat: float = Query(...), lon: float = Query(...)):
     """
     Reverse geocode coordinates to city name using OpenWeather API.
     """
@@ -149,8 +153,31 @@ def geocode(lat: float = Query(...), lon: float = Query(...)):
     print("[Backend geocode] Fetching:", url)
     res = requests.get(url)
     print("[Backend geocode] Status:", res.status_code, res.text)
-    res.raise_for_status()
-    data = res.json()
-    if data:
-        return {"city": data[0]["name"]}
-    return {"city": "Arrecife"}  
+    try:
+        res.raise_for_status()
+        data = res.json()
+        print("[Backend geocode] Full response data:", data)
+        
+        if data and len(data) > 0:
+            city_info = data[0]
+            print("[Backend geocode] City info:", city_info)
+            
+            city_name = city_info.get("name", "Arrecife")
+            country = city_info.get("country", "")
+            state = city_info.get("state", "")
+            
+            print(f"[Backend geocode] Extracted - Name: '{city_name}', Country: '{country}', State: '{state}'")
+            
+            return {
+                "city": city_name,
+                "country": country,
+                "state": state,
+                "full_data": city_info  
+            }
+        else:
+            print("[Backend geocode] No data found in response")
+            return {"city": "Arrecife"}
+            
+    except Exception as e:
+        print(f"[Backend geocode] Error: {e}")
+        return {"city": "Arrecife"}

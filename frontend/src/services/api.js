@@ -35,7 +35,7 @@ export async function getForecast(city) {
 
 export async function geocode(lat, lon) {
   try {
-    const url = `${API_URL}/weather/geocode?lat=${lat}&lon=${lon}`;
+    const url = `${API_URL}/weather/reverse-geocode?lat=${lat}&lon=${lon}`;
     console.log("[geocode] Fetching:", url);
 
     const res = await fetch(url);
@@ -69,6 +69,7 @@ export async function detectCity(lat, lon) {
 
     if (!res.ok) {
       const text = await res.text();
+      console.error("[detectCity] Full error response:", text);
       throw new Error(`Failed weather fetch for ${city}: ${res.status} ${text}`);
     }
 
@@ -78,6 +79,18 @@ export async function detectCity(lat, lon) {
     return { city, weather: weatherData };
   } catch (err) {
     console.error("[detectCity] Error:", err);
+    
+    try {
+      console.log("[detectCity] Trying direct coordinate weather fetch");
+      const weatherRes = await fetch(`${API_URL}/weather?lat=${lat}&lon=${lon}`);
+      if (weatherRes.ok) {
+        const weatherData = await weatherRes.json();
+        return { city: weatherData.name || "Arrecife", weather: weatherData };
+      }
+    } catch (fallbackErr) {
+      console.error("[detectCity] Fallback also failed:", fallbackErr);
+    }
+    
     return { city: "Arrecife", weather: null };
   }
 }
