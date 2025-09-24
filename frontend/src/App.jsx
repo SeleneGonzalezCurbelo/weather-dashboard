@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import WeatherSummary from "./components/WeatherSummary";
 import TemperatureHistory from "./components/TemperatureHistory";
-import { detectCity, getWeatherByCity } from "./services/api";
+import { detectCity, getWeather } from "./services/api";
 
 function App() {
   const [city, setCity] = useState(null);
@@ -15,7 +15,7 @@ function App() {
     const detect = async () => {
       if (!navigator.geolocation) {
         try {
-          const weather = await getWeatherByCity("Arrecife");
+          const weather = await getWeather("Arrecife");
           setCity("Arrecife");
           setInitialWeather(weather);
         } catch {
@@ -40,7 +40,7 @@ function App() {
           } catch {
             console.error("[App] Failed to detect city");
             try {
-              const weather = await getWeatherByCity("Arrecife");
+              const weather = await getWeather("Arrecife");
               setCity("Arrecife");
               setInitialWeather(weather);
             } catch {
@@ -53,7 +53,7 @@ function App() {
         async () => {
           console.warn("[App] Geolocation denied/unavailable");
           try {
-            const weather = await getWeatherByCity("Arrecife");
+            const weather = await getWeather("Arrecife");
             setCity("Arrecife");
             setInitialWeather(weather);
           } catch {
