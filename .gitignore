@@ -38,6 +38,7 @@ dist/
 build/
 
 # Editor / sistema
+/.github/copilot-instructions.md
 .DS_Store
 Thumbs.db
 .vscode/
