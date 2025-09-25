@@ -16,7 +16,7 @@ function App() {
     const detectCityAndWeather = async () => {
       if (!navigator.geolocation) {
         setCity("Arrecife");
-        fetchWeather("Arrecife");
+        await fetchWeather("Arrecife");
         return;
       }
 
@@ -29,6 +29,9 @@ function App() {
             const geoRes = await fetch(
               `${API_URL}/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
             );
+            if (!geoRes.ok) {
+              throw new Error(`Geocoding failed: ${geoRes.status}`);
+            }
             const geoData = await geoRes.json();
             const detectedCity = geoData.city || "Arrecife";
             console.log("[App] Detected city:", detectedCity);
