@@ -27,7 +27,6 @@ from fastapi import HTTPException
 from datetime import date, timedelta
 from app.services.openweather_adapter import get_5day_forecast
 from app.utils.validation import validate_city_name
-from app.config import OPENWEATHER_API_KEY
 from app.exceptions import AppError
 
 def fetch_current_weather(city: str) -> dict:

@@ -21,48 +21,34 @@ function App() {
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-        console.log("[App] Got geolocation coords:", position.coords);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const geoUrl = `${API_URL}/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`;
+            const geoRes = await fetch(geoUrl);
+            if (!geoRes.ok) throw new Error("Reverse geocode failed");
 
-        const geoUrl = `${API_URL}/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`;
-        console.log("[App] Fetching reverse-geocode:", geoUrl);
+            const geoData = await geoRes.json();
+            const detectedCity = geoData.city || "Arrecife";
+            setCity(detectedCity);
 
-        const geoRes = await fetch(geoUrl);
-        console.log("[App] Reverse-geocode response status:", geoRes.status, geoRes.statusText);
-
-        const geoData = await geoRes.json();
-        console.log("[App] Reverse-geocode data:", geoData);
-
-        const detectedCity = geoData.city || "Arrecife";
-        console.log("[App] Detected city:", detectedCity);
-        setCity(detectedCity);
-
-        const weatherUrl = `${API_URL}/weather/${detectedCity}`;
-        console.log("[App] Fetching weather:", weatherUrl);
-
-        const weatherRes = await fetch(weatherUrl);
-        console.log("[App] Weather response status:", weatherRes.status);
-
-        const weatherData = await weatherRes.json();
-        console.log("[App] Weather data:", weatherData);
-
-        setWeather(weatherData);
-        setLoading(false);
-
-      }, (err) => {
-        console.warn("[App] Geolocation denied or unavailable:", err);
-        setCity("Arrecife");
-        fetchWeather("Arrecife");
-      });
+            await fetchWeather(detectedCity);
+          } catch (err) {
+            setCity("Arrecife");
+            await fetchWeather("Arrecife");
+          }
+        },
+        async () => {
+          setCity("Arrecife");
+          await fetchWeather("Arrecife");
+        }
+      );
     };
 
     const fetchWeather = async (cityName) => {
-      console.log("[App] fetchWeather called for city:", cityName);
       const weatherRes = await fetch(`${API_URL}/weather/${cityName}`);
-      console.log("[App] fetchWeather status:", weatherRes.status);
       const weatherData = await weatherRes.json();
-      console.log("[App] fetchWeather data:", weatherData);
       setWeather(weatherData);
       setLoading(false);
     };
