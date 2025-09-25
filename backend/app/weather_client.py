@@ -40,13 +40,14 @@ def get_weather(city: str, units: str = "metric", lang: str = "en") -> dict:
     APIError
         If the API request fails or returns a non-200 status code.
     """
+    print("city - get_weather - weather_client:", city)
     params = {
         "q": city,
         "appid": OPENWEATHER_API_KEY,
         "units": units,
         "lang": lang,
     }
-
+    print("params - get_weather:", params)
     try:
         response = requests.get(OPENWEATHER_BASE_URL, params=params, timeout=10)
         response.raise_for_status()

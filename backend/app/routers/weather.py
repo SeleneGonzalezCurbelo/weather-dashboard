@@ -76,17 +76,6 @@ def weather_history_city(
     """
     return get_weather_history(db=db, city=city, limit=limit, offset=offset)
 
-@router.get("/{city}")
-def weather(city: str):
-    """
-    Fetch current weather data from external API for a given city.
-
-    Returns a structured dictionary containing temperature, humidity,
-    pressure, wind, cloudiness, and description.
-    """
-    print(f"[DEBUG] Weather endpoint called with city: {city}")
-    return fetch_current_weather(city)
-
 @router.post("/save/{city}")
 def weather_save(city: str, db: Session = Depends(get_db)):
     """
@@ -135,7 +124,7 @@ def reverse_geocode(lat: float = Query(...), lon: float = Query(...)):
     Reverse geocode coordinates to city name using OpenWeather API.
     """
     print(f"[REVERSE-GEOCODE] Started with lat={lat}, lon={lon}")
-    url = f"https://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit=1&appid={OPENWEATHER_API_KEY}"    
+    url = f"https://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&limit=1&appid={OPENWEATHER_API_KEY}"  
     print("[Backend geocode] Fetching:", url)
     res = requests.get(url)
     print("[Backend geocode] Status:", res.status_code, res.text)
@@ -145,3 +134,14 @@ def reverse_geocode(lat: float = Query(...), lon: float = Query(...)):
     if data and "name" in data[0]:
         return {"city": data[0]["name"]}
     return {"city": "Arrecife"}
+
+@router.get("/{city}")
+def weather(city: str):
+    """
+    Fetch current weather data from external API for a given city.
+
+    Returns a structured dictionary containing temperature, humidity,
+    pressure, wind, cloudiness, and description.
+    """
+    print(f"[DEBUG] Weather endpoint called with city: {city}")
+    return fetch_current_weather(city)

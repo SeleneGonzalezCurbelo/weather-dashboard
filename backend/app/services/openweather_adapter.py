@@ -13,7 +13,7 @@ from app.config import OPENWEATHER_BASE_URL, OPENWEATHER_API_KEY, OPENWEATHER_FO
 from app.exceptions import APIError
 
 def get_weather(city: str) -> dict:
-    print("city - get_weather", city)
+    print("city - get_weather - openweather", city)
     try:
         url = f"{OPENWEATHER_BASE_URL}?q={city}&appid={OPENWEATHER_API_KEY}&units=metric"
         res = requests.get(url)
