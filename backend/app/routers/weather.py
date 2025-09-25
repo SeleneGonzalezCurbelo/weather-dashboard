@@ -1,20 +1,11 @@
 """
-Weather Router.
+Weather Router for Weather Dashboard API.
 
-Defines all routes related to weather operations.
-
-Endpoints:
-    - GET /weather/{city}: Fetch current weather from the external API.
-    - POST /weather/save/{city}: Save current weather to the database.
-    - GET /weather/history: Retrieve all saved weather records with pagination.
-    - GET /weather/history/{city}: Retrieve weather history for a specific city.
-    - GET /weather/daily-summary/{city}: Get daily min/max/average stats for a city.
-    - GET /weather/latest/{city}: Get the latest weather record for a city.
-    - GET /weather/forecast/{city}: Get 5-day forecast for a city.
-    - GET /weather/reverse-geocode: Get city name from coordinates.
+Exposes endpoints for weather operations: fetch, save, history, summary, forecast, and reverse geocoding.
+All endpoints implement input validation, error handling, and response typing for security and maintainability.
 """
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 import requests
 from urllib.parse import urlencode
@@ -22,7 +13,7 @@ from urllib.parse import urlencode
 from app.db import get_db
 from app.schemas import PaginatedWeatherResponse
 from app.config import OPENWEATHER_API_KEY, OPENWEATHER_REVERSE_URL
-from app.exceptions import AppError, ValidationError
+from app.exceptions import AppError, ValidationError, APIError, DatabaseError
 from app.utils.validation import validate_city_name
 from app.services.weather_service import (
     fetch_current_weather,
@@ -78,7 +69,7 @@ def weather_history_city(
     return get_weather_history(db=db, city=city, limit=limit, offset=offset)
 
 
-@router.post("/save/{city}")
+@router.post("/save/{city}", response_model=dict)
 def weather_save(city: str, db: Session = Depends(get_db)) -> dict:
     """
     Fetch current weather and save it to the database.
@@ -94,14 +85,14 @@ def weather_save(city: str, db: Session = Depends(get_db)) -> dict:
     try:
         save_weather_data(city, db=db)
         return {"message": f"Weather for {city} saved successfully."}
-    except AppError as e:
-        raise HTTPException(status_code=e.code, detail=e.message)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error.")
+    except (AppError, APIError, DatabaseError, ValidationError) as e:
+        raise e
+    except Exception as e:
+        raise AppError(message="Internal server error.", code=500, log=True)
 
 
-@router.get("/latest/{city}")
-def latest_weather(city: str, db: Session = Depends(get_db)):
+@router.get("/latest/{city}", response_model=dict)
+def latest_weather(city: str, db: Session = Depends(get_db)) -> dict:
     """
     Retrieve the most recent weather record for a city from the database.
 
@@ -110,18 +101,18 @@ def latest_weather(city: str, db: Session = Depends(get_db)):
         db (Session): Database session.
 
     Returns:
-        WeatherResponse: Weather record with all recorded metrics.
+        dict: Weather record with all recorded metrics.
     """
     validate_city_name(city)
     try:
         return get_latest_weather(city, db=db)
-    except AppError as e:
-        raise HTTPException(status_code=e.code, detail=e.message)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error.")
+    except (AppError, APIError, DatabaseError, ValidationError) as e:
+        raise e
+    except Exception as e:
+        raise AppError(message="Internal server error.", code=500, log=True)
 
 
-@router.get("/daily-summary/{city}")
+@router.get("/daily-summary/{city}", response_model=dict)
 def daily_summary(city: str, db: Session = Depends(get_db)) -> dict:
     """
     Get daily min/max/average stats for a city.
@@ -136,13 +127,13 @@ def daily_summary(city: str, db: Session = Depends(get_db)) -> dict:
     validate_city_name(city)
     try:
         return get_daily_summary(city, db=db)
-    except AppError as e:
-        raise HTTPException(status_code=e.code, detail=e.message)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error.")
+    except (AppError, APIError, DatabaseError, ValidationError) as e:
+        raise e
+    except Exception as e:
+        raise AppError(message="Internal server error.", code=500, log=True)
 
 
-@router.get("/forecast/{city}")
+@router.get("/forecast/{city}", response_model=list)
 def forecast(city: str) -> list:
     """
     Fetch 5-day weather forecast from external API.
@@ -157,15 +148,15 @@ def forecast(city: str) -> list:
     try:
         data = fetch_5day_forecast(city)
         if not data:
-            raise AppError(message=f"No forecast available for {city}", code=404)
+            raise APIError(message=f"No forecast available for {city}", log=True)
         return data
-    except AppError as e:
-        raise HTTPException(status_code=e.code, detail=e.message)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error.")
+    except (AppError, APIError, DatabaseError, ValidationError) as e:
+        raise e
+    except Exception as e:
+        raise AppError(message="Internal server error.", code=500, log=True)
 
 
-@router.get("/reverse-geocode")
+@router.get("/reverse-geocode", response_model=dict)
 def reverse_geocode(lat: float = Query(...), lon: float = Query(...)) -> dict:
     """
     Reverse geocode coordinates to city name using OpenWeather API.
@@ -176,11 +167,14 @@ def reverse_geocode(lat: float = Query(...), lon: float = Query(...)) -> dict:
 
     Returns:
         dict: City name.
+
+    Raises:
+        HTTPException: If coordinates are invalid or city not found.
     """
     if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-        raise ValidationError(detail="Invalid latitude or longitude values.")
+        raise ValidationError(message="Invalid latitude or longitude values.")
     if not OPENWEATHER_API_KEY:
-        raise HTTPException(status_code=500, detail="API key not configured.")
+        raise APIError(message="API key not configured.", log=True)
     params = {
         "lat": lat,
         "lon": lon,
@@ -192,14 +186,14 @@ def reverse_geocode(lat: float = Query(...), lon: float = Query(...)) -> dict:
         res = requests.get(url)
         res.raise_for_status()
         data = res.json()
-        if data and "name" in data[0]:
-            return {"city": data[0]["name"]}
-        return {"city": "Arrecife"}
-    except requests.RequestException:
-        raise HTTPException(status_code=502, detail="Failed to reverse geocode coordinates.")
+        if not data or "name" not in data[0]:
+            raise APIError(message="City not found for given coordinates.", code=404, log=True)
+        return {"city": data[0]["name"]}
+    except requests.RequestException as e:
+        raise APIError(message="Failed to reverse geocode coordinates.", log=True)
 
 
-@router.get("/{city}")
+@router.get("/{city}", response_model=dict)
 def weather(city: str) -> dict:
     """
     Fetch current weather data from external API for a given city.
@@ -209,11 +203,21 @@ def weather(city: str) -> dict:
 
     Returns:
         dict: Structured dictionary containing temperature, humidity, pressure, wind, cloudiness, and description.
+
+    Example:
+        {
+            "temperature": 22.5,
+            "humidity": 60,
+            "pressure": 1012,
+            "wind_speed": 3.5,
+            "cloudiness": 40,
+            "description": "clear sky"
+        }
     """
     validate_city_name(city)
     try:
         return fetch_current_weather(city)
-    except AppError as e:
-        raise HTTPException(status_code=e.code, detail=e.message)
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal server error.")
+    except (AppError, APIError, DatabaseError, ValidationError) as e:
+        raise e
+    except Exception as e:
+        raise AppError(message="Internal server error.", code=500, log=True)
