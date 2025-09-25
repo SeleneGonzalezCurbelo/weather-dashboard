@@ -94,7 +94,7 @@ def weather_save(city: str, db: Session = Depends(get_db)):
     save_weather_data(city, db=db)
     return {"message": f"Weather for {city} saved successfully."}
 
-@router.get("/weather/{city}")
+@router.get("/{city}")
 def get_weather_by_city(city: str):
     """
     Get current weather for a city.
@@ -145,7 +145,7 @@ def forecast(city: str):
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/reverse-geocode")
-def reverse_geocode(lat: float = Query(...), lon: float = Query(...)):
+def geocode(lat: float = Query(...), lon: float = Query(...)):
     """
     Reverse geocode coordinates to city name using OpenWeather API.
     """
@@ -153,31 +153,9 @@ def reverse_geocode(lat: float = Query(...), lon: float = Query(...)):
     print("[Backend geocode] Fetching:", url)
     res = requests.get(url)
     print("[Backend geocode] Status:", res.status_code, res.text)
-    try:
-        res.raise_for_status()
-        data = res.json()
-        print("[Backend geocode] Full response data:", data)
-        
-        if data and len(data) > 0:
-            city_info = data[0]
-            print("[Backend geocode] City info:", city_info)
-            
-            city_name = city_info.get("name", "Arrecife")
-            country = city_info.get("country", "")
-            state = city_info.get("state", "")
-            
-            print(f"[Backend geocode] Extracted - Name: '{city_name}', Country: '{country}', State: '{state}'")
-            
-            return {
-                "city": city_name,
-                "country": country,
-                "state": state,
-                "full_data": city_info  
-            }
-        else:
-            print("[Backend geocode] No data found in response")
-            return {"city": "Arrecife"}
-            
-    except Exception as e:
-        print(f"[Backend geocode] Error: {e}")
-        return {"city": "Arrecife"}
+    res.raise_for_status()
+    data = res.json()
+    print("Data geocode:", data)
+    if data and "name" in data[0]:
+        return {"city": data[0]["name"]}
+    return {"city": "Arrecife"}

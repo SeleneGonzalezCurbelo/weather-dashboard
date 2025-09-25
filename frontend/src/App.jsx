@@ -26,7 +26,6 @@ function App() {
           console.log("[App] Got geolocation coords:", position.coords);
 
           try {
-            // 1️⃣ Detectar ciudad desde backend
             const geoRes = await fetch(
               `${API_URL}/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
             );
@@ -35,7 +34,6 @@ function App() {
             console.log("[App] Detected city:", detectedCity);
             setCity(detectedCity);
 
-            // 2️⃣ Pedir el tiempo de la ciudad
             await fetchWeather(detectedCity);
           } catch (err) {
             console.error("[App] Error detecting city or weather:", err);

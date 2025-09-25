@@ -12,55 +12,65 @@ Low-level functions to consume the OpenWeather API:
 """
 import requests
 from datetime import datetime
-from app.config import settings
+from app.config import OPENWEATHER_API_KEY, OPENWEATHER_BASE_URL, OPENWEATHER_FORECAST_URL
 
 def fetch_current_weather(city: str):
     """
     Fetch current weather from OpenWeather for a given city and return
     a dict ready to save in the database.
     """
+    print(f"[DEBUG] API Key: {OPENWEATHER_API_KEY}")
+    print(f"[DEBUG] Base URL: {OPENWEATHER_BASE_URL}")
+    print(f"[DEBUG] City: {city}")
+    
     params = {
         "q": city,
-        "appid": settings.OPENWEATHER_KEY,
+        "appid": OPENWEATHER_API_KEY,
         "units": "metric",
     }
+    
+    print(f"[DEBUG] Full URL: {OPENWEATHER_BASE_URL}?q={city}&appid={OPENWEATHER_API_KEY[:10]}...")
 
-    res = requests.get(settings.OPENWEATHER_BASE_URL, params=params)
-    res.raise_for_status()
-    data = res.json()
+    try:
+        res = requests.get(OPENWEATHER_BASE_URL, params=params, timeout=10)
+        res.raise_for_status()
+        data = res.json()
 
-    main = data.get("main", {})
-    wind = data.get("wind", {})
-    clouds = data.get("clouds", {})
-    rain = data.get("rain", {})
-    snow = data.get("snow", {})
-    sys = data.get("sys", {})
+        main = data.get("main", {})
+        wind = data.get("wind", {})
+        clouds = data.get("clouds", {})
+        rain = data.get("rain", {})
+        snow = data.get("snow", {})
+        sys = data.get("sys", {})
 
-    return {
-        "city": data.get("name"),
-        "country": sys.get("country"),
-        "description": data["weather"][0]["description"] if data.get("weather") else "N/A",
-        "icon": data["weather"][0]["icon"] if data.get("weather") else None,
-        "temperature": main.get("temp"),
-        "feels_like": main.get("feels_like"),
-        "temp_min": main.get("temp_min"),
-        "temp_max": main.get("temp_max"),
-        "humidity": main.get("humidity"),
-        "pressure": main.get("pressure"),
-        "sea_level": main.get("sea_level"),
-        "grnd_level": main.get("grnd_level"),
-        "wind_speed": wind.get("speed"),
-        "wind_deg": wind.get("deg"),
-        "wind_gust": wind.get("gust"),
-        "visibility": data.get("visibility"),
-        "clouds": clouds.get("all"),
-        "rain_1h": rain.get("1h"),
-        "rain_3h": rain.get("3h"),
-        "snow_1h": snow.get("1h"),
-        "snow_3h": snow.get("3h"),
-        "sunrise": datetime.fromtimestamp(sys.get("sunrise")) if sys.get("sunrise") else None,
-        "sunset": datetime.fromtimestamp(sys.get("sunset")) if sys.get("sunset") else None,
-    }
+        return {
+            "city": data.get("name"),
+            "country": sys.get("country"),
+            "description": data["weather"][0]["description"] if data.get("weather") else "N/A",
+            "icon": data["weather"][0]["icon"] if data.get("weather") else None,
+            "temperature": main.get("temp"),
+            "feels_like": main.get("feels_like"),
+            "temp_min": main.get("temp_min"),
+            "temp_max": main.get("temp_max"),
+            "humidity": main.get("humidity"),
+            "pressure": main.get("pressure"),
+            "sea_level": main.get("sea_level"),
+            "grnd_level": main.get("grnd_level"),
+            "wind_speed": wind.get("speed"),
+            "wind_deg": wind.get("deg"),
+            "wind_gust": wind.get("gust"),
+            "visibility": data.get("visibility"),
+            "clouds": clouds.get("all"),
+            "rain_1h": rain.get("1h"),
+            "rain_3h": rain.get("3h"),
+            "snow_1h": snow.get("1h"),
+            "snow_3h": snow.get("3h"),
+            "sunrise": datetime.fromtimestamp(sys.get("sunrise")) if sys.get("sunrise") else None,
+            "sunset": datetime.fromtimestamp(sys.get("sunset")) if sys.get("sunset") else None,
+        }
+    except requests.exceptions.RequestException as e:
+        print(f"[OpenWeather API Error] {e}")
+        raise e
 
 def fetch_historical_weather(lat: float, lon: float, dt: int):
     """
@@ -70,9 +80,9 @@ def fetch_historical_weather(lat: float, lon: float, dt: int):
         "lat": lat,
         "lon": lon,
         "dt": dt,
-        "appid": settings.OPENWEATHER_KEY,
+        "appid": OPENWEATHER_API_KEY,
         "units": "metric",
     }
-    res = requests.get(settings.OPENWEATHER_ONECALL_URL, params=params)
+    res = requests.get(OPENWEATHER_FORECAST_URL, params=params)
     res.raise_for_status()
     return res.json()

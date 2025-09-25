@@ -9,7 +9,7 @@ Functions:
     Raises APIError if the request fails.
 """
 import requests
-from app.config import settings, OPENWEATHER_BASE_URL, OPENWEATHER_API_KEY, OPENWEATHER_FORECAST_URL
+from app.config import OPENWEATHER_BASE_URL, OPENWEATHER_API_KEY, OPENWEATHER_FORECAST_URL
 from app.exceptions import APIError
 
 def get_weather(city: str) -> dict:
