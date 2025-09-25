@@ -21,9 +21,20 @@ DATABASE_URL: str = os.getenv(
 FASTAPI_PORT: int = int(os.getenv("FASTAPI_PORT", 8000))
 
 # --- OPENWEATHER ---
+# Nunca expongas la API key en el código fuente. Debe estar en .env y nunca en repositorios públicos.
 OPENWEATHER_API_KEY: str = os.getenv("OPENWEATHER_API_KEY", "")
-OPENWEATHER_BASE_URL: str = os.getenv("OPENWEATHER_BASE_URL", "http://api.openweathermap.org/data/2.5/weather")
-OPENWEATHER_FORECAST_URL: str = os.getenv("OPENWEATHER_FORECAST_URL", "http://api.openweathermap.org/data/2.5/forecast")
+OPENWEATHER_BASE_URL: str = os.getenv(
+    "OPENWEATHER_BASE_URL",
+    "https://api.openweathermap.org/data/2.5/weather"
+)
+OPENWEATHER_FORECAST_URL: str = os.getenv(
+    "OPENWEATHER_FORECAST_URL",
+    "https://api.openweathermap.org/data/2.5/forecast"
+)
+OPENWEATHER_REVERSE_URL: str = os.getenv(
+    "OPENWEATHER_REVERSE_URL",
+    "https://api.openweathermap.org/geo/1.0/reverse"
+)
 
 # --- CRON / SCHEDULER ---
 CITIES: List[str] = os.getenv("CITIES", "Arrecife,Madrid,Barcelona,London,New York").split(",")

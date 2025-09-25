@@ -13,23 +13,33 @@ Low-level functions to consume the OpenWeather API:
 import requests
 from datetime import datetime
 from app.config import OPENWEATHER_API_KEY, OPENWEATHER_BASE_URL, OPENWEATHER_FORECAST_URL
+from app.exceptions import APIError
+from app.utils.validation import validate_city_name
 
-def fetch_current_weather(city: str):
+def fetch_current_weather(city: str) -> dict:
     """
     Fetch current weather from OpenWeather for a given city and return
     a dict ready to save in the database.
+
+    Args:
+        city (str): City name.
+
+    Raises:
+        ValidationError: If city name is invalid.
+        APIError: If the request fails.
+
+    Returns:
+        dict: Weather data.
     """
-    print(f"[DEBUG] API Key: {OPENWEATHER_API_KEY}")
-    print(f"[DEBUG] Base URL: {OPENWEATHER_BASE_URL}")
-    print(f"[DEBUG] City: {city}")
-    
+    validate_city_name(city)
+    if not OPENWEATHER_API_KEY or not OPENWEATHER_BASE_URL:
+        raise APIError("API key or base URL not configured.")
+
     params = {
         "q": city,
         "appid": OPENWEATHER_API_KEY,
         "units": "metric",
     }
-    
-    print(f"[DEBUG] Full URL: {OPENWEATHER_BASE_URL}?q={city}&appid={OPENWEATHER_API_KEY[:10]}...")
 
     try:
         res = requests.get(OPENWEATHER_BASE_URL, params=params, timeout=10)
@@ -69,13 +79,26 @@ def fetch_current_weather(city: str):
             "sunset": datetime.fromtimestamp(sys.get("sunset")) if sys.get("sunset") else None,
         }
     except requests.exceptions.RequestException as e:
-        print(f"[OpenWeather API Error] {e}")
-        raise e
+        raise APIError(f"Error fetching weather for {city}: {str(e)}")
 
-def fetch_historical_weather(lat: float, lon: float, dt: int):
+def fetch_historical_weather(lat: float, lon: float, dt: int) -> dict:
     """
-    dt: timestamp en UTC (segundos)
+    Fetch historical weather data for a given location and UTC timestamp.
+
+    Args:
+        lat (float): Latitude.
+        lon (float): Longitude.
+        dt (int): UTC timestamp (seconds).
+
+    Raises:
+        APIError: If the request fails.
+
+    Returns:
+        dict: Historical weather data.
     """
+    if not OPENWEATHER_API_KEY or not OPENWEATHER_FORECAST_URL:
+        raise APIError("API key or forecast URL not configured.")
+
     params = {
         "lat": lat,
         "lon": lon,
@@ -83,6 +106,9 @@ def fetch_historical_weather(lat: float, lon: float, dt: int):
         "appid": OPENWEATHER_API_KEY,
         "units": "metric",
     }
-    res = requests.get(OPENWEATHER_FORECAST_URL, params=params)
-    res.raise_for_status()
-    return res.json()
+    try:
+        res = requests.get(OPENWEATHER_FORECAST_URL, params=params, timeout=10)
+        res.raise_for_status()
+        return res.json()
+    except requests.exceptions.RequestException as e:
+        raise APIError(f"Error fetching historical weather: {str(e)}")
