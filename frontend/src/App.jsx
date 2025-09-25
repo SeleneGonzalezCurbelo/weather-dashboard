@@ -15,59 +15,61 @@ function App() {
   useEffect(() => {
     const detectCityAndWeather = async () => {
       if (!navigator.geolocation) {
+        console.log("[App] Geolocation not available, defaulting to Arrecife");
         setCity("Arrecife");
         await fetchWeather("Arrecife");
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log("[App] Got geolocation coords:", position.coords);
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log("[App] Got geolocation coords:", position.coords);
 
-          try {
-            const geoRes = await fetch(
-              `${API_URL}/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
-            );
-            if (!geoRes.ok) {
-              throw new Error(`Geocoding failed: ${geoRes.status}`);
-            }
-            const geoData = await geoRes.json();
-            const detectedCity = geoData.city || "Arrecife";
-            console.log("[App] Detected city:", detectedCity);
-            setCity(detectedCity);
+        const geoUrl = `${API_URL}/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`;
+        console.log("[App] Fetching reverse-geocode:", geoUrl);
 
-            await fetchWeather(detectedCity);
-          } catch (err) {
-            console.error("[App] Error detecting city or weather:", err);
-            setCity("Arrecife");
-            await fetchWeather("Arrecife");
-          }
-        },
-        (err) => {
-          console.warn("[App] Geolocation denied or unavailable:", err);
-          setCity("Arrecife");
-          fetchWeather("Arrecife");
-        }
-      );
+        const geoRes = await fetch(geoUrl);
+        console.log("[App] Reverse-geocode response status:", geoRes.status, geoRes.statusText);
+
+        const geoData = await geoRes.json();
+        console.log("[App] Reverse-geocode data:", geoData);
+
+        const detectedCity = geoData.city || "Arrecife";
+        console.log("[App] Detected city:", detectedCity);
+        setCity(detectedCity);
+
+        const weatherUrl = `${API_URL}/weather/${detectedCity}`;
+        console.log("[App] Fetching weather:", weatherUrl);
+
+        const weatherRes = await fetch(weatherUrl);
+        console.log("[App] Weather response status:", weatherRes.status);
+
+        const weatherData = await weatherRes.json();
+        console.log("[App] Weather data:", weatherData);
+
+        setWeather(weatherData);
+        setLoading(false);
+
+      }, (err) => {
+        console.warn("[App] Geolocation denied or unavailable:", err);
+        setCity("Arrecife");
+        fetchWeather("Arrecife");
+      });
     };
 
     const fetchWeather = async (cityName) => {
-      try {
-        const weatherRes = await fetch(`${API_URL}/weather/${cityName}`);
-        const weatherData = await weatherRes.json();
-        console.log("[App] Weather data:", weatherData);
-        setWeather(weatherData);
-      } catch (err) {
-        console.error("[App] Failed to fetch weather:", err);
-        setWeather(null);
-      } finally {
-        setLoading(false);
-      }
+      console.log("[App] fetchWeather called for city:", cityName);
+      const weatherRes = await fetch(`${API_URL}/weather/${cityName}`);
+      console.log("[App] fetchWeather status:", weatherRes.status);
+      const weatherData = await weatherRes.json();
+      console.log("[App] fetchWeather data:", weatherData);
+      setWeather(weatherData);
+      setLoading(false);
     };
 
     detectCityAndWeather();
   }, []);
+
 
   return (
     <div className="min-h-screen flex flex-col overflow-y-auto">
