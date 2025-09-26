@@ -1,15 +1,14 @@
 # Weather Dashboard
 
-**Weather Dashboard** is a backend project for collecting, storing, and serving historical and real-time weather data.
+**Weather Dashboard** is a full-stack application for collecting, storing, and visualizing real-time and historical weather data.
 
-It is built with **FastAPI**, uses **PostgreSQL** as database, and runs in **Docker containers** for easy deployment.  
-
-The frontend (React) will be added in upcoming iterations. 
+Built with FastAPI, PostgreSQL, and Docker on the backend, and a modern React + Vite frontend. It integrates with the OpenWeatherMap API and supports automated data collection via background jobs.
 
 ---
 
 ## Table of Contents
 - [Features](#-features)
+  - [Planned Features](#planned-features)
 - [Project Structure](#project-structure)
 - [Requirements](#requirements)
 - [Getting Started](#getting-started)
@@ -17,18 +16,27 @@ The frontend (React) will be added in upcoming iterations.
 - [API Endpoints](#api-endpoints)
 - [Background Jobs (Scheduler)](#background-jobs-scheduler)
 - [Frontend (React Dashboard)](#frontend-react-dashboard)
+- [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 
 ---
 
 ## Features
 
-✅ Fetch real-time weather data from **OpenWeatherMap API**  
-✅ Save validated weather data into PostgreSQL  
-✅ Query **historical weather records** (with pagination & filtering by city)  
-✅ Preconfigured with **Docker + Docker Compose**  
-⬜ Interactive React dashboard (upcoming)  
-⬜ Data analysis & predictive models (future work)  
+- 🔄 Fetch current weather from OpenWeatherMap API
+- 🗃️ Store validated weather data in PostgreSQL
+- 📈 Query historical records with pagination and filtering
+- 📊 Daily summaries (min/max/avg) instead of hourly breakdowns
+- 🕒 Automated hourly data collection via scheduler
+- 🌍 Geolocation-based city detection
+- 🧪 Unit tests with SQLite + API mocks
+- 🐳 Dockerized for easy deploymen
+
+### Planned Features
+
+- 📉 Data analysis and predictive weather modeling
+- 🔔 Smart weather alerts and anomaly detection
+- 📅 Flexible time aggregation (weekly, monthly trends)
 
 ---
 
@@ -81,8 +89,16 @@ frontend/
 │ │ ├── WeatherSummary.jsx
 │ │ |── TemperatureChart.jsx
 │ │ └── TemperatureHistory.jsx
+| ├── services/
+│ │ └── api.js
+| ├── utils/
+│ │ ├── data.js
+│ │ |── icons.js
+│ │ └── weatherHelpers.js
 │ ├── App.jsx
+│ ├── main.jsx
 │ ├── index.css
+│ ├── App.css
 │ └── index.js
 ├── package.json
 └── README.md
@@ -92,9 +108,10 @@ frontend/
 
 ## Requirements
 
-- **Python 3.11+** (only if running locally without Docker)  
+- **Python 3.11+** 
+- **Node.js 18+**
 - **Docker & Docker Compose**  
-- External weather API: **OpenWeatherMap** (requires API key)  
+- External weather API: **OpenWeatherMap** (required in .env)
 
 Install backend dependencies locally (optional):  
 
@@ -115,7 +132,7 @@ git clone https://github.com/SeleneGonzalezCurbelo/weather-dashboard.git
 cd weather-dashboard
 ```
 
-2. Set up environment variables and fill in your credentials:
+2. Configure environment variables
 
 ```
 cp .env.example .env
@@ -179,44 +196,42 @@ pytest
 | `GET`  | `/weather/history/{city}`       | List saved records for a specific city (paginated)     |
 | `GET`  | `/weather/daily-summary/{city}` | Compute daily summary (min/max/avg) metrics for a city |
 | `GET`  | `/weather/latest/{city}`        | Retrieve most recent weather record for a city         |
+| `GET`  | `/weather/reverse-geocode`      | Detect city from coordinates                           |
 
 ---
 
 ## Background Jobs (Scheduler)
 
-Weather Dashboard automatically collects weather data periodically using **APScheduler**, integrated inside the FastAPI app.
-
-- The scheduler runs when the backend starts.
-- It fetches and stores weather data for multiple cities every hour.
-
-If you want to customize the interval or the list of tracked cities, update the configuration in:
-```
-app/scheduler.py
-```
+- Uses APScheduler to fetch weather hourly
+- Configurable tracked cities and intervals
+- Defined in app/scheduler.py
 
 ---
 
 ## Frontend (React Dashboard)
 
-The frontend is a React app that displays real-time and historical weather data from the backend.
+- 🌐 Search cities and view current weather
+- 📊 Temperature history chart with tooltips
+- 📋 Table view with hourly breakdown
+- 🧭 Wind direction, humidity, pressure, visibility
+- 📍 Auto-detect location via geolocation
+- 🔮 Forecast fallback if DB data is missing
 
-### Features
+---
 
-- Search for a city and display current weather summary  
-- View temperature history as a chart or table (hourly and daily breakdown)  
-- Chart shows temperature with min/max markers and detailed tooltip including:
-  - Humidity
-  - Wind speed and cardinal direction
-  - Weather icon
-- Switch between chart and table tabs  
-- 5-day forecast available even if historical DB data is missing
-- Automatic user geolocation 
-- Future: predictive models and weather alerts 
+## Contributing
+
+We welcome contributions! Please follow these guidelines:
+- Use clear commit messages (feat:, fix:, refactor:)
+- Write unit tests for new features
+- Follow PEP 8 (Python) and ESLint/Prettier (JS)
+- Use async/await for I/O operations
+- Submit PRs with a clear description and related issue reference
 
 ---
 
 ## Disclaimer 
 
-This project is for educational purposes only. The author is not responsible for any misuse, errors, or damages resulting from the use of this project or third-party APIs.
+This project is for educational purposes only. The author is not responsible for misuse, errors, or third-party API limitations.
 
 ---
