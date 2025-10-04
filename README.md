@@ -217,6 +217,24 @@ pytest
 - 📍 Auto-detect location via geolocation
 - 🔮 Forecast fallback if DB data is missing
 
+### City Search + Current Weather
+
+<p align="center">
+  <img src="docs/images/search-weather.png" alt="Search and current weather view" width="700"/>
+</p>
+
+### Temperature History Chart
+
+<p align="center">
+  <img src="docs/images/temperature-chart.png" alt="Temperature history chart" width="700"/>
+</p>
+
+### Weather History Table
+
+<p align="center">
+  <img src="docs/images/weather-table.png" alt="Weather history table" width="700"/>
+</p>
+
 ---
 
 ## Contributing
