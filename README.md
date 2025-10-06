@@ -1,8 +1,20 @@
-# Weather Dashboard
+# 🌤️ Weather Dashboard
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14-blue)
+![Docker](https://img.shields.io/badge/Docker-✔️-blue)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 **Weather Dashboard** is a full-stack application for collecting, storing, and visualizing real-time and historical weather data.
 
 Built with FastAPI, PostgreSQL, and Docker on the backend, and a modern React + Vite frontend. It integrates with the OpenWeatherMap API and supports automated data collection via background jobs.
+
+---
+
+<p align="center">
+  <img src="docs/images/search-weather.png" alt="Weather Dashboard Preview" width="850"/>
+</p>
 
 ---
 
@@ -11,12 +23,17 @@ Built with FastAPI, PostgreSQL, and Docker on the backend, and a modern React + 
   - [Planned Features](#planned-features)
 - [Project Structure](#project-structure)
 - [Requirements](#requirements)
-- [Getting Started](#getting-started)
+- [Installation](#installation)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+- [Usage](#usage)
 - [Running Tests](#running-tests)
 - [API Endpoints](#api-endpoints)
 - [Background Jobs (Scheduler)](#background-jobs-scheduler)
-- [Frontend (React Dashboard)](#frontend-react-dashboard)
+- [Frontend Screenshots](#frontend-screenshots)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
+- [License](#license)
 - [Disclaimer](#disclaimer)
 
 ---
@@ -113,45 +130,25 @@ frontend/
 - **Docker & Docker Compose**  
 - External weather API: **OpenWeatherMap** (required in .env)
 
-Install backend dependencies locally (optional):  
-
-```bash
-pip install -r backend/requirements.txt
-```
-
 ---
 
-## Getting Started
+## Installation
 
-### Backend 
+### Backend
 
-1. Clone the repository:
-
-```
+```bash
 git clone https://github.com/SeleneGonzalezCurbelo/weather-dashboard.git
-cd weather-dashboard
-```
-
-2. Configure environment variables
-
-```
+cd weather-dashboard/backend
 cp .env.example .env
-```
-Fill in required values (e.g. OPENWEATHER_API_KEY, DB credentials).
-
-3. Start the containers:
-
-```
+# Fill in your DB credentials and API key
 docker-compose up --build
 ```
 
-4. Access the backend FastAPI:
+Access backend:
 - [API Docs](http://localhost:8000/docs)
 - [Health check](http://localhost:8000/)
 
 ### Frontend
-
-1. Go into the frontend folder:
 
 ```bash
 cd frontend
@@ -159,29 +156,27 @@ npm install
 npm start
 ```
 
-The app will run on http://localhost:5173/.
+App runs at: http://localhost:5173/
+
+---
+
+## Usage
+- Search for cities to get current weather
+- View temperature charts and historical tables
+- Automated scheduler fetches hourly weather data
+- Use API endpoints to fetch and save data programmatically
 
 ---
 
 ## Running Tests
 
-The backend includes unit tests for CRUD operations, data validation, and the weather API client.
-
-**Run all tests:**
-
-```
+```bash
 pytest
 ```
 
-**Notes:**
-- Tests use an in-memory SQLite database and do not affect the real PostgreSQL database.
-- Some tests mock external API calls to provide deterministic results.
-- Make sure dependencies are installed (pip install -r requirements.txt) before running tests.
-- The tests cover:
-    - test_crud.py → database operations
-    - test_validation.py → weather data validation logic
-    - test_weather_client.py → API client for fetching weather
-    - test_main.py → FastAPI endpoints (requires local DB or mocks)
+- Uses SQLite in-memory database
+- Mocks external API calls
+- Tests CRUD, validation, API client, and endpoints
 
 ---
 
@@ -204,11 +199,11 @@ pytest
 
 - Uses APScheduler to fetch weather hourly
 - Configurable tracked cities and intervals
-- Defined in app/scheduler.py
+- Defined in `app/scheduler.py`
 
 ---
 
-## Frontend (React Dashboard)
+## Frontend Screenshots
 
 - 🌐 Search cities and view current weather
 - 📊 Temperature history chart with tooltips
@@ -237,6 +232,17 @@ pytest
 
 ---
 
+## Roadmap
+
+- ✅ Backend CRUD for weather data
+- ✅ Scheduler to fetch weather hourly
+- ✅ PostgreSQL integration
+- 🔄 Frontend dashboard (React + Vite)
+- 🔄 Data visualizations (charts & tables)
+- 🔲 Predictive analytics & anomaly detection
+
+---
+
 ## Contributing
 
 We welcome contributions! Please follow these guidelines:
@@ -245,6 +251,12 @@ We welcome contributions! Please follow these guidelines:
 - Follow PEP 8 (Python) and ESLint/Prettier (JS)
 - Use async/await for I/O operations
 - Submit PRs with a clear description and related issue reference
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
 ---
 
